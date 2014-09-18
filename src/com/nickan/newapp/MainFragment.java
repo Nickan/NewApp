@@ -38,7 +38,7 @@ public class MainFragment extends Fragment {
 	    
 	    LoginButton authButton = (LoginButton) view.findViewById(R.id.authButton);
 	    authButton.setFragment(this);
-	 //   authButton.setReadPermissions(Arrays.asList("user_likes", "user_status"));
+	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status"));
 	    return view;
 	}
 	
@@ -52,23 +52,10 @@ public class MainFragment extends Fragment {
 	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
 	    if (state.isOpened()) {
 	        Log.e(TAG, "Logged in...");
-	        
+	        clearTokenAccess(session);
 	    } else if (state.isClosed()) {
 	        Log.e(TAG, "Logged out...");
 	        session.closeAndClearTokenInformation();
-	        /* make the API call */
-	        new Request(
-	            session,
-	            "/me/permissions",
-	            null,
-	            HttpMethod.DELETE,
-	            new Request.Callback() {
-	                public void onCompleted(Response response) {
-	                    /* handle the result */
-	                }
-
-	            }
-	        ).executeAsync();
 	    }
 	    
 	    List<String> perms = session.getPermissions();
@@ -77,6 +64,16 @@ public class MainFragment extends Fragment {
 	    		Log.e(TAG, "Permission: " + tmp);
 	    	}
 	    }
+	}
+	
+	private void clearTokenAccess(Session session) {
+		new Request(session, "/me/permissions", null, HttpMethod.DELETE,
+				new Request.Callback() {
+					public void onCompleted(Response response) {
+						/* handle the result */
+					}
+
+				}).executeAsync();
 	}
 	
 	
