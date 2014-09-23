@@ -3,39 +3,138 @@ package com.nickan.newapp;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import com.facebook.Session;
-
-import android.support.v4.app.FragmentActivity;
-import android.util.Base64;
-import android.util.Log;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.Signature;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Base64;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
-public class MainActivity extends FragmentActivity {
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.UiLifecycleHelper;
+
+public class MainActivity extends FragmentActivity  {
+	private static final String TAG = "MainActivity";
+	private static final int SPLASH_FRAGMENT = 0;
+	private static final int USER_FRAGMENT = 1;
+	private static final int SETTINGS_FRAGMENT = 2;
 	
-	private MainFragment mainFragment;
+	private Fragment[] fragments = new Fragment[SETTINGS_FRAGMENT + 1];
+	
+//	private SplashFragment splashFragment;
+//	private UserProfileFragment userFragment;
+	
+//	@Override
+//	public View onCreateView(String name, Context context, AttributeSet attrs) {
+//		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//		
+//		return inflater.inflate(resource, root)
+//	}
+	
+	// Trying out again the Callback system
+	private Session.StatusCallback callback = new Session.StatusCallback() {
+		
+		@Override
+		public void call(Session session, SessionState state, Exception exception) {
+			if (state != null && state.isOpened()) {
+				onSessionStateChange(session, state, exception);
+			}
+			showSessionStatus("call()");
+		}
+	};
+	private UiLifecycleHelper uiHelper;
+	
+	private MenuItem settings;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		uiHelper = new UiLifecycleHelper(this, callback);
+		uiHelper.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.main);
+		
+		FragmentManager fm = getSupportFragmentManager();
+		
+		fragments[SPLASH_FRAGMENT] = fm.findFragmentById(R.id.splash_fragment);
+		fragments[USER_FRAGMENT] = fm.findFragmentById(R.id.user_fragment);
+		fragments[SETTINGS_FRAGMENT] = fm.findFragmentById(R.id.userSettingsFragment);
+		
+		FragmentTransaction fragTrans = fm.beginTransaction();
+		for (int index = 0; index < fragments.length; ++index) {
+			fragTrans.hide(fragments[index]);
+		}
+		fragTrans.commit();
+		
+		/*
+			Creating a fragment at runtime, but still I am unsuccessful :(
 		if (savedInstanceState == null) {
 	        // Add the fragment on initial activity setup
-	        mainFragment = new MainFragment();
-	        getSupportFragmentManager()
-	        .beginTransaction()
-	        .add(android.R.id.content, mainFragment)
-	        .commit();
+			splashFragment = new SplashFragment();
+			userFragment = new UserProfileFragment();
+			
+			FragmentTransaction fragTransaction = fm.beginTransaction();
+	        fragTransaction.add(android.R.id.content, splashFragment);
+	     
+	        fragTransaction.commit();
 	    } else {
 	        // Or set the fragment from restored state info
-	        mainFragment = (MainFragment) getSupportFragmentManager()
-	        .findFragmentById(android.R.id.content);
+	    	splashFragment = (SplashFragment) fm.findFragmentById(android.R.id.content);
 	    }
-		getHashKey();
+	    */
+	//	getHashKey();
+		
+		showFragment(SPLASH_FRAGMENT, false);
 	}
+	
+	private void showFragment(int fragmentIndex, boolean addToBackStack) {
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction transaction = fm.beginTransaction();
+		for (int index = 0; index < fragments.length; ++index) {
+			if (index == fragmentIndex) {
+				transaction.show(fragments[index]);
+			} else {
+				transaction.hide(fragments[index]);
+			}
+		}
+		if (addToBackStack) {
+			transaction.addToBackStack(null);
+		}
+		transaction.commit();
+		
+		showSessionStatus("showFragment: " + fragmentIndex);
+	}
+	
+	
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    // Inflate the menu items for use in the action bar
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.main_activity_action, menu);
+	    MenuItem item = menu.findItem(R.id.action_search);
+	    
+	    if (item.isVisible()) {
+	    	Log.e(TAG, "Visible");
+	    } else {
+	    	Log.e(TAG, "not");
+	    }
+	    
+	    return super.onCreateOptionsMenu(menu);
+	}
+
 	
 	private void getHashKey() {
 		try {
@@ -55,12 +154,91 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 
-
+	
+	
+	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
+		
+	}
+	
+	
+	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		Session.getActiveSession().onActivityResult(this, requestCode,
 				resultCode, data);
+		uiHelper.onActivityResult(requestCode, resultCode, data);
 	}
 
+	@Override
+	public void onResume() {
+		super.onResume();
+		Session session = Session.getActiveSession();
+		
+		if (session != null && session.isOpened()) {
+			showFragment(USER_FRAGMENT, false);
+		}
+		showSessionStatus("onResume");
+		uiHelper.onResume();
+	}
+	
+	@Override 
+	public void onPause() {
+		super.onPause();
+		uiHelper.onPause();
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		uiHelper.onDestroy();
+	}
+	
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+	    // only add the menu when the USER_PROFILE fragment is showing
+	    if (fragments[USER_FRAGMENT].isVisible()) {
+	        if (menu.size() == 0) {
+	            settings = menu.add(R.string.settings);
+	        }
+	        return true;
+	    } else {
+	        menu.clear();
+	        settings = null;
+	    }
+	    return false;
+	}
+	
+	//		THE CULPRIT WHY THE ACTION SEARCH BUTTON IS MISSING... MAYBE OVERWRITTEN
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    if (item.equals(settings)) {
+	    //    showFragment(SETTINGS_FRAGMENT, true);
+	        return true;
+	    }
+	    return false;
+	}
+	
+	
+	// For debugging
+	public static void showSessionStatus(String identifier) {
+		Session session = Session.getActiveSession();
+
+		if (session == null) {
+			Log.e(TAG + " " + identifier, "session is null");
+		} else {
+			Log.e(TAG + " " + identifier, "session is not null");
+		}
+
+		if (session.isOpened()) {
+			Log.e(TAG + " " + identifier, "session open");
+		} else if (session.isClosed()) {
+			Log.e(TAG + " " + identifier, "session close");
+		} else {
+			Log.e(TAG + " " + identifier, "session neither open nor close");
+		}
+	}
+	
 }
+

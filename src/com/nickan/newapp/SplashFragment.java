@@ -19,8 +19,9 @@ import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.widget.LoginButton;
 
-public class MainFragment extends Fragment {
-	private static final String TAG = "MainFragment";
+
+public class SplashFragment extends Fragment {
+	private static final String TAG = "SplashFragment";
 	
 	private Session.StatusCallback callback = new Session.StatusCallback() {
 	    @Override
@@ -34,25 +35,35 @@ public class MainFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, 
 	        ViewGroup container, 
 	        Bundle savedInstanceState) {
-	    View view = inflater.inflate(R.layout.main, container, false);
+	    View view = inflater.inflate(R.layout.splash, container, false);
 	    
-	    LoginButton authButton = (LoginButton) view.findViewById(R.id.authButton);
+	    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
 	    authButton.setFragment(this);
-	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status"));
+	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
 	    return view;
 	}
+	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
+	    
 	    uiHelper = new UiLifecycleHelper(getActivity(), callback);
+	    if (savedInstanceState == null) {
+	    	Log.e(TAG, "Null");
+	    } else {
+	    	Log.e(TAG, "Not null");
+	    	
+	    }
+	    
+	    // Should show the line as a NPE
 	    uiHelper.onCreate(savedInstanceState);
 	}
 	
 	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
 	    if (state.isOpened()) {
 	        Log.e(TAG, "Logged in...");
-	        clearTokenAccess(session);
+	    //    clearTokenAccess(session);
 	    } else if (state.isClosed()) {
 	        Log.e(TAG, "Logged out...");
 	        session.closeAndClearTokenInformation();
@@ -70,7 +81,6 @@ public class MainFragment extends Fragment {
 		new Request(session, "/me/permissions", null, HttpMethod.DELETE,
 				new Request.Callback() {
 					public void onCompleted(Response response) {
-						/* handle the result */
 					}
 
 				}).executeAsync();
@@ -115,5 +125,17 @@ public class MainFragment extends Fragment {
 	    super.onSaveInstanceState(outState);
 	    uiHelper.onSaveInstanceState(outState);
 	}
+	
+	
+	// For debugging
+	public boolean isNull(Object object, String tag) {
+		if (object == null) {
+			System.out.println(tag + " is null");
+			return true;
+		}
+		System.out.println(tag + " is not null");
+		return false;
+	}
+	
 	
 }
