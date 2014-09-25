@@ -37,9 +37,9 @@ public class SplashFragment extends Fragment {
 	        Bundle savedInstanceState) {
 	    View view = inflater.inflate(R.layout.splash, container, false);
 	    
-	    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
-	    authButton.setFragment(this);
-	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
+	//    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
+	//    authButton.setFragment(this);
+	//    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
 	    return view;
 	}
 	
@@ -56,7 +56,6 @@ public class SplashFragment extends Fragment {
 	    	
 	    }
 	    
-	    // Should show the line as a NPE
 	    uiHelper.onCreate(savedInstanceState);
 	}
 	
@@ -126,16 +125,5 @@ public class SplashFragment extends Fragment {
 	    uiHelper.onSaveInstanceState(outState);
 	}
 	
-	
-	// For debugging
-	public boolean isNull(Object object, String tag) {
-		if (object == null) {
-			System.out.println(tag + " is null");
-			return true;
-		}
-		System.out.println(tag + " is not null");
-		return false;
-	}
-	
-	
+
 }

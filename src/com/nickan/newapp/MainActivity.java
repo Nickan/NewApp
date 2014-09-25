@@ -132,6 +132,12 @@ public class MainActivity extends FragmentActivity  {
 	    	Log.e(TAG, "not");
 	    }
 	    
+	    if (menu.hasVisibleItems()) {
+	    	Log.e(TAG, "Has visible items");
+	    } else {
+	    	Log.e(TAG, "No visible items");
+	    }
+	    
 	    return super.onCreateOptionsMenu(menu);
 	}
 
@@ -196,25 +202,28 @@ public class MainActivity extends FragmentActivity  {
 	
 	
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
+	public boolean onPrepareOptionsMenu(Menu menu) {	
 	    // only add the menu when the USER_PROFILE fragment is showing
 	    if (fragments[USER_FRAGMENT].isVisible()) {
 	        if (menu.size() == 0) {
 	            settings = menu.add(R.string.settings);
 	        }
-	        return true;
+	    //    return true;
 	    } else {
-	        menu.clear();
+	    	menu.removeItem(R.string.settings);
+	    //    menu.clear();
 	        settings = null;
 	    }
-	    return false;
+
+	    return true;
 	}
+	
 	
 	//		THE CULPRIT WHY THE ACTION SEARCH BUTTON IS MISSING... MAYBE OVERWRITTEN
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    if (item.equals(settings)) {
-	    //    showFragment(SETTINGS_FRAGMENT, true);
+	        showFragment(SETTINGS_FRAGMENT, true);
 	        return true;
 	    }
 	    return false;

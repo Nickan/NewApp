@@ -1,6 +1,10 @@
 package com.nickan.newapp;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.facebook.HttpMethod;
 import com.facebook.Request;
 import com.facebook.Response;
@@ -10,12 +14,16 @@ import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphObject;
 import com.facebook.model.GraphUser;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 
 public class UserProfileFragment extends Fragment {
@@ -54,6 +62,7 @@ public class UserProfileFragment extends Fragment {
 		Session session = Session.getActiveSession();
 		if (session != null && session.isOpened()) {
 			createUserProfile(session);
+			createUserPosts(session);
 		}
 		
 		Log.e(TAG, "OnResume()");
@@ -99,7 +108,6 @@ public class UserProfileFragment extends Fragment {
 				locale.setText("Locale: " + user.getLocation());
 			}
 		}).executeAsync();
-		
 	}
 	
 	
@@ -108,12 +116,83 @@ public class UserProfileFragment extends Fragment {
 				new Request.Callback() {
 			
 					public void onCompleted(Response response) {
+						if (response == null) {
+							Log.e(TAG, "onCompleted() response is null");
+							return;
+						}
+						
+						JSONObject jObject = response.getGraphObject().getInnerJSONObject();
+						
+						try {
+							JSONArray jArrayData = (JSONArray) jObject.get("data");
+							Log.e(TAG, "Array Length: " + jArrayData.length());
+							for (int index = 0; index < jArrayData.length(); ++index) {
+								JSONObject tmpJObj = jArrayData.getJSONObject(index);
+								JSONObject jObjLikes = getJSONEdge(tmpJObj, "likes");
+								
+								String storyTitle = tmpJObj.getString("story");
+								createPost(storyTitle, jObjLikes);
+							}
+												
+								
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						
 					}
 					
 				}).executeAsync();
 	}
 	
+	private JSONObject getJSONEdge(JSONObject jsonObject, String edgeType) {
+		try {
+			return jsonObject.getJSONObject(edgeType);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private int postCount = 0;
+	
+	private void createPost(String storyTitle, JSONObject jObjLikes) {
+		JSONArray jArrayLikesData = null;
+		
+		// There is likes count
+		if (jObjLikes != null) {
+			try {
+				jArrayLikesData = jObjLikes.getJSONArray("data");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		if (jArrayLikesData != null) {
+			TextView newPost = new TextView(getActivity());
+			newPost.setText("Post Count: " + postCount++ + "\n" + storyTitle + " No: of likes: " + jArrayLikesData.length());
+			
+			Resources r = getResources();
+			
+			int leftMarginDp = 25;
+			int leftMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, leftMarginDp, r.getDisplayMetrics());
+			
+			int topMarginDp = 25;
+			int topMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topMarginDp, r.getDisplayMetrics());
+			
+			LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			lParams.leftMargin = leftMarginPx;
+			lParams.topMargin = topMarginPx;
+			newPost.setLayoutParams(lParams);
+			
+			View view = getView();
+			LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
+			layout.addView(newPost);
+		}
+
+	}
 	
 	
 	private void onStateStatusChange(Session session, SessionState state,
