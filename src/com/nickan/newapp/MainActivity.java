@@ -163,7 +163,9 @@ public class MainActivity extends FragmentActivity  {
 	
 	
 	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
-		
+		if (session != null && session.isOpened()) {
+			showFragment(USER_FRAGMENT, false);
+		}
 	}
 	
 	
@@ -181,9 +183,7 @@ public class MainActivity extends FragmentActivity  {
 		super.onResume();
 		Session session = Session.getActiveSession();
 		
-		if (session != null && session.isOpened()) {
-			showFragment(USER_FRAGMENT, false);
-		}
+		onSessionStateChange(session, null, null);
 		showSessionStatus("onResume");
 		uiHelper.onResume();
 	}
@@ -202,12 +202,11 @@ public class MainActivity extends FragmentActivity  {
 	
 	
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {	
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
 	    // only add the menu when the USER_PROFILE fragment is showing
 	    if (fragments[USER_FRAGMENT].isVisible()) {
-	        if (menu.size() == 0) {
-	            settings = menu.add(R.string.settings);
-	        }
+	        settings = menu.add(R.string.settings);
 	    //    return true;
 	    } else {
 	    	menu.removeItem(R.string.settings);

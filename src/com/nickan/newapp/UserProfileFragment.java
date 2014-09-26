@@ -1,6 +1,8 @@
 package com.nickan.newapp;
 
 
+import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +38,8 @@ public class UserProfileFragment extends Fragment {
 	TextView gender;
 	TextView locale;
 	
+	private ArrayList<TextView> posts = new ArrayList<TextView>();
+	
 	
 	private UiLifecycleHelper uiHelper;
 	private Session.StatusCallback callback = new Session.StatusCallback() {
@@ -60,12 +64,7 @@ public class UserProfileFragment extends Fragment {
 		super.onResume();
 		
 		Session session = Session.getActiveSession();
-		if (session != null && session.isOpened()) {
-			createUserProfile(session);
-			createUserPosts(session);
-		}
-		
-		Log.e(TAG, "OnResume()");
+		onStateStatusChange(session, null, null);
 	}
 	
 	private void createUserProfile(Session session) {
@@ -123,6 +122,7 @@ public class UserProfileFragment extends Fragment {
 						
 						JSONObject jObject = response.getGraphObject().getInnerJSONObject();
 						
+						int likeCount = 0;
 						try {
 							JSONArray jArrayData = (JSONArray) jObject.get("data");
 							Log.e(TAG, "Array Length: " + jArrayData.length());
@@ -130,11 +130,17 @@ public class UserProfileFragment extends Fragment {
 								JSONObject tmpJObj = jArrayData.getJSONObject(index);
 								JSONObject jObjLikes = getJSONEdge(tmpJObj, "likes");
 								
-								String storyTitle = tmpJObj.getString("story");
-								createPost(storyTitle, jObjLikes);
+								if (jObjLikes != null) {
+									++likeCount;
+								}
+								Log.e(TAG, "LIke count: " + likeCount);	
+								
+								
+								String story = getStory(tmpJObj);
+								createPost(story, jObjLikes);
 							}
 												
-								
+							
 						} catch (JSONException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -143,6 +149,8 @@ public class UserProfileFragment extends Fragment {
 					}
 					
 				}).executeAsync();
+		
+		
 	}
 	
 	private JSONObject getJSONEdge(JSONObject jsonObject, String edgeType) {
@@ -155,9 +163,19 @@ public class UserProfileFragment extends Fragment {
 		return null;
 	}
 	
+	private String getStory(JSONObject jsonObject) {
+		try {
+			return jsonObject.getString("story");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	private int postCount = 0;
 	
-	private void createPost(String storyTitle, JSONObject jObjLikes) {
+	private void createPost(String story, JSONObject jObjLikes) {
 		JSONArray jArrayLikesData = null;
 		
 		// There is likes count
@@ -172,7 +190,7 @@ public class UserProfileFragment extends Fragment {
 		
 		if (jArrayLikesData != null) {
 			TextView newPost = new TextView(getActivity());
-			newPost.setText("Post Count: " + postCount++ + "\n" + storyTitle + " No: of likes: " + jArrayLikesData.length());
+			newPost.setText("Post Count: " + postCount++ + "\n" + story + " No: of likes: " + jArrayLikesData.length());
 			
 			Resources r = getResources();
 			
@@ -190,6 +208,7 @@ public class UserProfileFragment extends Fragment {
 			View view = getView();
 			LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
 			layout.addView(newPost);
+			posts.add(newPost);
 		}
 
 	}
@@ -198,6 +217,13 @@ public class UserProfileFragment extends Fragment {
 	private void onStateStatusChange(Session session, SessionState state,
 			Exception exception) {
 		if (session != null && session.isOpened()) {
+			View view = getView();
+			LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
+			for (TextView tmpView : posts) {
+				layout.removeView(tmpView);
+			}
+			postCount = 0;
+			
 			createUserProfile(session);
 			createUserPosts(session);
 		}
