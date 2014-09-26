@@ -24,13 +24,14 @@ import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 
-public class MainActivity extends FragmentActivity  {
+public class MainActivity extends FragmentActivity implements UserProfileFragment.OnUserProfileSelectedListener {
 	private static final String TAG = "MainActivity";
 	private static final int SPLASH_FRAGMENT = 0;
 	private static final int USER_FRAGMENT = 1;
 	private static final int SETTINGS_FRAGMENT = 2;
+	private static final int COMMENT_FRAGMENT = 3;
 	
-	private Fragment[] fragments = new Fragment[SETTINGS_FRAGMENT + 1];
+	private Fragment[] fragments = new Fragment[COMMENT_FRAGMENT + 1];
 	
 //	private SplashFragment splashFragment;
 //	private UserProfileFragment userFragment;
@@ -71,6 +72,7 @@ public class MainActivity extends FragmentActivity  {
 		fragments[SPLASH_FRAGMENT] = fm.findFragmentById(R.id.splash_fragment);
 		fragments[USER_FRAGMENT] = fm.findFragmentById(R.id.user_fragment);
 		fragments[SETTINGS_FRAGMENT] = fm.findFragmentById(R.id.userSettingsFragment);
+		fragments[COMMENT_FRAGMENT] = fm.findFragmentById(R.id.comment_fragment);
 		
 		FragmentTransaction fragTrans = fm.beginTransaction();
 		for (int index = 0; index < fragments.length; ++index) {
@@ -204,21 +206,17 @@ public class MainActivity extends FragmentActivity  {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
-	    // only add the menu when the USER_PROFILE fragment is showing
+		
 	    if (fragments[USER_FRAGMENT].isVisible()) {
 	        settings = menu.add(R.string.settings);
-	    //    return true;
 	    } else {
 	    	menu.removeItem(R.string.settings);
-	    //    menu.clear();
 	        settings = null;
 	    }
 
 	    return true;
 	}
 	
-	
-	//		THE CULPRIT WHY THE ACTION SEARCH BUTTON IS MISSING... MAYBE OVERWRITTEN
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    if (item.equals(settings)) {
@@ -246,6 +244,13 @@ public class MainActivity extends FragmentActivity  {
 		} else {
 			Log.e(TAG + " " + identifier, "session neither open nor close");
 		}
+	}
+	
+	
+
+	@Override
+	public void onPostSelected(String msg) {
+	//	showFragment(COMMENT_FRAGMENT, false);
 	}
 	
 }

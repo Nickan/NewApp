@@ -16,19 +16,50 @@ import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphObject;
 import com.facebook.model.GraphUser;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 
-public class UserProfileFragment extends Fragment {
+public class UserProfileFragment extends ListFragment {
+	
+	private OnUserProfileSelectedListener selectedCallback;
+	
+	public interface OnUserProfileSelectedListener {
+		public void onPostSelected(String comment);
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		
+		try {
+			selectedCallback = (OnUserProfileSelectedListener) activity;
+		} catch (ClassCastException e) {
+			throw new ClassCastException(activity.toString()
+                    + " must implement OnUserProfileSelectedListener");
+		}
+	}
+	
+	
+	@Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        // Send the event to the host activity
+		selectedCallback.onPostSelected("Test");
+    }
+	
+	
 	private static final String TAG = "UserProfileFragment";
 
 	
@@ -174,6 +205,7 @@ public class UserProfileFragment extends Fragment {
 	}
 	
 	private int postCount = 0;
+	private String commentStringClicked = null;
 	
 	private void createPost(String story, JSONObject jObjLikes) {
 		JSONArray jArrayLikesData = null;
@@ -191,6 +223,14 @@ public class UserProfileFragment extends Fragment {
 		if (jArrayLikesData != null) {
 			TextView newPost = new TextView(getActivity());
 			newPost.setText("Post Count: " + postCount++ + "\n" + story + " No: of likes: " + jArrayLikesData.length());
+			newPost.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					TextView tv = (TextView) v;
+	//				selectedCallback.onPostSelected(tv.getText().toString());
+				}
+			});
 			
 			Resources r = getResources();
 			
@@ -217,18 +257,24 @@ public class UserProfileFragment extends Fragment {
 	private void onStateStatusChange(Session session, SessionState state,
 			Exception exception) {
 		if (session != null && session.isOpened()) {
-			View view = getView();
-			LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
-			for (TextView tmpView : posts) {
-				layout.removeView(tmpView);
-			}
-			postCount = 0;
+			clearUserPosts();
 			
 			createUserProfile(session);
 			createUserPosts(session);
+			
 		}
 	}
+	
+	private void clearUserPosts() {
+		View view = getView();
+		LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
+		for (TextView tmpView : posts) {
+			layout.removeView(tmpView);
+		}
+		postCount = 0;
+	}
 
+	
 	@Override
 	public void onPause() {
 		super.onPause();

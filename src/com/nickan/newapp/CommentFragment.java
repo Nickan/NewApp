@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 public class CommentFragment extends Fragment {
 	
@@ -14,6 +15,11 @@ public class CommentFragment extends Fragment {
 		View view = inflater.inflate(R.layout.comment, container);
 		
 		return view;
+	}
+	
+	public void showComment(String msg) {
+		TextView userComment = (TextView) getView().findViewById(R.id.user_comment);
+		userComment.setText(msg);
 	}
 	
 }
