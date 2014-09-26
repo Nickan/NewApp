@@ -98,7 +98,8 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 	    */
 	//	getHashKey();
 		
-		showFragment(SPLASH_FRAGMENT, false);
+		showFragment(SPLASH_FRAGMENT, true);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 	
 	private void showFragment(int fragmentIndex, boolean addToBackStack) {
@@ -166,7 +167,7 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 	
 	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
 		if (session != null && session.isOpened()) {
-			showFragment(USER_FRAGMENT, false);
+			showFragment(USER_FRAGMENT, true);
 		}
 	}
 	
@@ -250,7 +251,25 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 
 	@Override
 	public void onPostSelected(String msg) {
-	//	showFragment(COMMENT_FRAGMENT, false);
+		showFragment(COMMENT_FRAGMENT, true);
+		CommentFragment comFrag = (CommentFragment) fragments[COMMENT_FRAGMENT];
+		comFrag.showComment(msg);
+		Log.e(TAG, "Post Clicked");
+	}
+	
+	@Override
+	public void onBackPressed() {
+		Log.e(TAG, "Back pressed");
+		FragmentManager fm = getSupportFragmentManager();
+		if (fm.getBackStackEntryCount() > 0) {
+			Log.e(TAG, "Entry count: " + fm.getBackStackEntryCount());
+		} else {
+			Log.e(TAG, "No entry count");
+			super.onBackPressed();
+		}
+	//	super.onBackPressed();
+		
+		
 	}
 	
 }

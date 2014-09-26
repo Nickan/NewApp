@@ -205,7 +205,6 @@ public class UserProfileFragment extends ListFragment {
 	}
 	
 	private int postCount = 0;
-	private String commentStringClicked = null;
 	
 	private void createPost(String story, JSONObject jObjLikes) {
 		JSONArray jArrayLikesData = null;
@@ -228,7 +227,7 @@ public class UserProfileFragment extends ListFragment {
 				@Override
 				public void onClick(View v) {
 					TextView tv = (TextView) v;
-	//				selectedCallback.onPostSelected(tv.getText().toString());
+					selectedCallback.onPostSelected(tv.getText().toString());
 				}
 			});
 			
