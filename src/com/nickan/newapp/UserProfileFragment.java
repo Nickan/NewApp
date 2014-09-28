@@ -13,13 +13,11 @@ import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
-import com.facebook.model.GraphObject;
 import com.facebook.model.GraphUser;
 
 import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.util.TypedValue;
@@ -33,6 +31,7 @@ import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 
 public class UserProfileFragment extends ListFragment {
+	public static final String COMMENT = "com.nickan.newapp.UserProfileFragment.COMMENT";
 	
 	private OnUserProfileSelectedListener selectedCallback;
 	
@@ -81,9 +80,10 @@ public class UserProfileFragment extends ListFragment {
 		}
 	};
 	
+	View view;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.user_profile, container, false);
+		view = inflater.inflate(R.layout.user_profile, container, false);
 		uiHelper = new UiLifecycleHelper(getActivity(), callback);
 		uiHelper.onCreate(savedInstanceState);
 		return view;
@@ -99,17 +99,12 @@ public class UserProfileFragment extends ListFragment {
 	}
 	
 	private void createUserProfile(Session session) {
-		//...
-		showSessionStatus("createUserProfile()");
-		View view = getView();
 		id = (TextView) view.findViewById(R.id.id);
 		name = (TextView) view.findViewById(R.id.name);
 		link = (TextView) view.findViewById(R.id.link);
 		gender = (TextView) view.findViewById(R.id.gender);
 		locale = (TextView) view.findViewById(R.id.locale);
-
-
-		Log.e(TAG, "Session is open");
+		
 		Request.newMeRequest(session, new Request.GraphUserCallback() {
 				
 			@Override
@@ -156,7 +151,7 @@ public class UserProfileFragment extends ListFragment {
 						int likeCount = 0;
 						try {
 							JSONArray jArrayData = (JSONArray) jObject.get("data");
-							Log.e(TAG, "Array Length: " + jArrayData.length());
+						//	Log.e(TAG, "Array Length: " + jArrayData.length());
 							for (int index = 0; index < jArrayData.length(); ++index) {
 								JSONObject tmpJObj = jArrayData.getJSONObject(index);
 								JSONObject jObjLikes = getJSONEdge(tmpJObj, "likes");
@@ -164,7 +159,7 @@ public class UserProfileFragment extends ListFragment {
 								if (jObjLikes != null) {
 									++likeCount;
 								}
-								Log.e(TAG, "LIke count: " + likeCount);	
+							//	Log.e(TAG, "LIke count: " + likeCount);	
 								
 								
 								String story = getStory(tmpJObj);
@@ -220,6 +215,8 @@ public class UserProfileFragment extends ListFragment {
 		}
 		
 		if (jArrayLikesData != null) {
+			if (getActivity() == null) return;
+			
 			TextView newPost = new TextView(getActivity());
 			newPost.setText("Post Count: " + postCount++ + "\n" + story + " No: of likes: " + jArrayLikesData.length());
 			newPost.setOnClickListener(new OnClickListener() {
@@ -243,8 +240,7 @@ public class UserProfileFragment extends ListFragment {
 			lParams.leftMargin = leftMarginPx;
 			lParams.topMargin = topMarginPx;
 			newPost.setLayoutParams(lParams);
-			
-			View view = getView();
+
 			LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
 			layout.addView(newPost);
 			posts.add(newPost);
@@ -256,6 +252,8 @@ public class UserProfileFragment extends ListFragment {
 	private void onStateStatusChange(Session session, SessionState state,
 			Exception exception) {
 		if (session != null && session.isOpened()) {
+			if (getView() == null) return;
+			
 			clearUserPosts();
 			
 			createUserProfile(session);
@@ -266,9 +264,14 @@ public class UserProfileFragment extends ListFragment {
 	
 	private void clearUserPosts() {
 		View view = getView();
+		if (view == null) return;
+		
 		LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
-		for (TextView tmpView : posts) {
-			layout.removeView(tmpView);
+		
+		if (layout != null) {
+			for (TextView tmpView : posts) {
+				layout.removeView(tmpView);
+			}
 		}
 		postCount = 0;
 	}

@@ -37,9 +37,9 @@ public class SplashFragment extends Fragment {
 	        Bundle savedInstanceState) {
 	    View view = inflater.inflate(R.layout.splash, container, false);
 	    
-	//    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
-	//    authButton.setFragment(this);
-	//    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
+	    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
+	    authButton.setFragment(this);
+	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
 	    return view;
 	}
 	
@@ -49,13 +49,6 @@ public class SplashFragment extends Fragment {
 	    super.onCreate(savedInstanceState);
 	    
 	    uiHelper = new UiLifecycleHelper(getActivity(), callback);
-	    if (savedInstanceState == null) {
-	    	Log.e(TAG, "Null");
-	    } else {
-	    	Log.e(TAG, "Not null");
-	    	
-	    }
-	    
 	    uiHelper.onCreate(savedInstanceState);
 	}
 	
@@ -68,12 +61,6 @@ public class SplashFragment extends Fragment {
 	        session.closeAndClearTokenInformation();
 	    }
 	    
-	    List<String> perms = session.getPermissions();
-	    if (perms != null) {
-	    	for (String tmp : perms) {
-	    		Log.e(TAG, "Permission: " + tmp);
-	    	}
-	    }
 	}
 	
 	private void clearTokenAccess(Session session) {
@@ -125,5 +112,16 @@ public class SplashFragment extends Fragment {
 	    uiHelper.onSaveInstanceState(outState);
 	}
 	
+	
+	private void showPermissions() {
+		/*
+		List<String> perms = session.getPermissions();
+	    if (perms != null) {
+	    	for (String tmp : perms) {
+	    		Log.e(TAG, "Permission: " + tmp);
+	    	}
+	    }
+	    */
+	}
 
 }
