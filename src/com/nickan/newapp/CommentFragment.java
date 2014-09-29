@@ -31,28 +31,46 @@ public class CommentFragment extends Fragment {
 		Bundle args = getArguments();
 		ArrayList<String> comments = args.getStringArrayList(UserProfileFragment.COMMENT);
 		
-		if (comments == null) return;
+		Resources r = getResources();
 		
-		for (String tmpStr : comments) {
+		int leftMarginDp = 25;
+		int leftMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, leftMarginDp, r.getDisplayMetrics());
+		
+		int topMarginDp = 25;
+		int topMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topMarginDp, r.getDisplayMetrics());
+		
+		
+		LinearLayout layout = (LinearLayout) view.findViewById(R.id.comment_layout);
+		
+		if (comments == null) {
 			TextView newUserComment = new TextView(getActivity());
-			newUserComment.setText(tmpStr);
 			
-			Resources r = getResources();
-			
-			int leftMarginDp = 25;
-			int leftMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, leftMarginDp, r.getDisplayMetrics());
-			
-			int topMarginDp = 25;
-			int topMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topMarginDp, r.getDisplayMetrics());
+			newUserComment.setText("No comments yet");
 			
 			LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 			lParams.leftMargin = leftMarginPx;
 			lParams.topMargin = topMarginPx;
-			newUserComment.setLayoutParams(lParams);
 			
-			LinearLayout layout = (LinearLayout) view.findViewById(R.id.comment_layout);
+			newUserComment.setLayoutParams(lParams);
 			layout.addView(newUserComment);
+		} else {
+			for (String tmpStr : comments) {
+				TextView newUserComment = new TextView(getActivity());
+				newUserComment.setText(tmpStr);
+				
+				LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				lParams.leftMargin = leftMarginPx;
+				lParams.topMargin = topMarginPx;
+				
+				newUserComment.setLayoutParams(lParams);
+				
+				layout.addView(newUserComment);
+			}
 		}
+		
+		
+		
+		
 	}
 	
 }

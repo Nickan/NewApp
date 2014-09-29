@@ -30,13 +30,6 @@ import com.facebook.UiLifecycleHelper;
 public class MainActivity extends FragmentActivity implements UserProfileFragment.OnUserProfileSelectedListener {
 	private static final String TAG = "MainActivity";
 	
-	private static final int SPLASH_FRAGMENT = 0;
-	private static final int USER_PROFILE_FRAGMENT = 1;
-	private static final int COMMENT_FRAGMENT = 2;
-	private static final int SETTINGS_FRAGMENT = 3;
-	
-	private int currentFragment = -1;
-	
 	private Session.StatusCallback callback = new Session.StatusCallback() {
 		
 		@Override
@@ -63,9 +56,9 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 			FragmentManager fm = getSupportFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
 			
-			ft.add(R.id.container, new SplashFragment());
-			currentFragment = SPLASH_FRAGMENT;
-			ft.commit();
+		//	ft.add(R.id.container, new SplashFragment());
+		//	ft.commit();
+			replaceCurrentFragment(new SplashFragment());
 		}
 	
 	}
@@ -103,16 +96,21 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 	
 	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
 		if (session != null && session.isOpened()) {
-			if (currentFragment == SPLASH_FRAGMENT) {
-				currentFragment = USER_PROFILE_FRAGMENT;
-				FragmentManager fm = getSupportFragmentManager();
-				FragmentTransaction ft = fm.beginTransaction();
-				
-				ft.replace(R.id.container, new UserProfileFragment());
-				ft.addToBackStack(null);
-				ft.commit();
+			Fragment currentFragment = getCurrentFragment();
+			
+			if (currentFragment instanceof SplashFragment) {
+				replaceCurrentFragment(new UserProfileFragment());
 			}
 		}
+	}
+	
+	private void replaceCurrentFragment(Fragment newFragment) {
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction ft = fm.beginTransaction();
+		
+		ft.replace(R.id.container, newFragment);
+		ft.addToBackStack(null);
+		ft.commit();
 	}
 	
 	
@@ -211,22 +209,17 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
-		setCurrentFragment();
 	}
 	
-	private void setCurrentFragment() {
+	private final Fragment getCurrentFragment() {
 		FragmentManager fm = getSupportFragmentManager();
 		List<Fragment> fragments = fm.getFragments();
 		for (Fragment tmpFrag : fragments) {
 			if (tmpFrag != null && tmpFrag.isVisible()) {
-				
-				Log.e(TAG, "Current Fragment: " + tmpFrag.toString());
-				if (tmpFrag instanceof SplashFragment) {
-					currentFragment = SPLASH_FRAGMENT;
-					break;
-				}
+				return tmpFrag;
 			}
 		}
+		return null;
 	}
 	
 }
