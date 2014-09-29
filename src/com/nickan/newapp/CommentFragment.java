@@ -1,13 +1,19 @@
 package com.nickan.newapp;
 
+import java.util.ArrayList;
+
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TableRow.LayoutParams;
 
 public class CommentFragment extends Fragment {
 	private static final String TAG = "CommentFragment";
@@ -21,13 +27,32 @@ public class CommentFragment extends Fragment {
 	}
 	
 	private void showComment(View view) {
-		TextView userComment = (TextView) view.findViewById(R.id.user_comment);
 		Intent intent = getActivity().getIntent();
 		Bundle args = getArguments();
-		String comment = args.getString(UserProfileFragment.COMMENT);
+		ArrayList<String> comments = args.getStringArrayList(UserProfileFragment.COMMENT);
 		
-		Log.e(TAG, comment);
-		userComment.setText(comment);
+		if (comments == null) return;
+		
+		for (String tmpStr : comments) {
+			TextView newUserComment = new TextView(getActivity());
+			newUserComment.setText(tmpStr);
+			
+			Resources r = getResources();
+			
+			int leftMarginDp = 25;
+			int leftMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, leftMarginDp, r.getDisplayMetrics());
+			
+			int topMarginDp = 25;
+			int topMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topMarginDp, r.getDisplayMetrics());
+			
+			LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			lParams.leftMargin = leftMarginPx;
+			lParams.topMargin = topMarginPx;
+			newUserComment.setLayoutParams(lParams);
+			
+			LinearLayout layout = (LinearLayout) view.findViewById(R.id.comment_layout);
+			layout.addView(newUserComment);
+		}
 	}
 	
 }

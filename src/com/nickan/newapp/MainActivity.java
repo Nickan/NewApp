@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Intent;
@@ -192,19 +193,18 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 	
 
 	@Override
-	public void onPostSelected(String msg) {
+	public void onPostSelected(ArrayList<String> comments) {
 		FragmentManager fm = getSupportFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		
 		Bundle args = new Bundle();
-		args.putString(UserProfileFragment.COMMENT, msg);
+		args.putStringArrayList(UserProfileFragment.COMMENT, comments);
 		CommentFragment newComFrag = new CommentFragment();
 		newComFrag.setArguments(args);
 		
 		ft.replace(R.id.container, newComFrag);
 		ft.addToBackStack(null);
 		ft.commit();
-		Log.e(TAG, "Post: " + msg);
 		Log.e(TAG, "Post Clicked");
 	}
 	

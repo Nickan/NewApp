@@ -360,7 +360,8 @@ int id com_facebook_tooltip_bubble_view_top_pointer 0x7f050051
 int id com_facebook_usersettingsfragment_login_button 0x7f050057
 int id com_facebook_usersettingsfragment_logo_image 0x7f050055
 int id com_facebook_usersettingsfragment_profile_name 0x7f050056
-int id comment 0x7f050058
+int id comment 0x7f050059
+int id comment_layout 0x7f050058
 int id container 0x7f05005a
 int id default_activity_button 0x7f05002a
 int id dialog 0x7f05000e
@@ -417,7 +418,6 @@ int id title 0x7f05002d
 int id top_action_bar 0x7f050022
 int id up 0x7f050023
 int id useLogo 0x7f050003
-int id user_comment 0x7f050059
 int id user_info_text 0x7f05005f
 int id user_profile_layout 0x7f05005e
 int id withText 0x7f05000c

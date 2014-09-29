@@ -1327,7 +1327,8 @@ containing a value of this type.
         public static final int com_facebook_usersettingsfragment_login_button=0x7f050057;
         public static final int com_facebook_usersettingsfragment_logo_image=0x7f050055;
         public static final int com_facebook_usersettingsfragment_profile_name=0x7f050056;
-        public static final int comment=0x7f050058;
+        public static final int comment=0x7f050059;
+        public static final int comment_layout=0x7f050058;
         public static final int container=0x7f05005a;
         public static final int default_activity_button=0x7f05002a;
         public static final int dialog=0x7f05000e;
@@ -1384,7 +1385,6 @@ containing a value of this type.
         public static final int top_action_bar=0x7f050022;
         public static final int up=0x7f050023;
         public static final int useLogo=0x7f050003;
-        public static final int user_comment=0x7f050059;
         public static final int user_info_text=0x7f05005f;
         public static final int user_profile_layout=0x7f05005e;
         public static final int withText=0x7f05000c;

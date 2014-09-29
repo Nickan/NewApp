@@ -2,6 +2,7 @@ package com.nickan.newapp;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,7 +37,7 @@ public class UserProfileFragment extends ListFragment {
 	private OnUserProfileSelectedListener selectedCallback;
 	
 	public interface OnUserProfileSelectedListener {
-		public void onPostSelected(String comment);
+		public void onPostSelected(ArrayList<String> comment);
 	}
 	
 	@Override
@@ -55,7 +56,7 @@ public class UserProfileFragment extends ListFragment {
 	@Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         // Send the event to the host activity
-		selectedCallback.onPostSelected("Test");
+	//	selectedCallback.onPostSelected("Test");
     }
 	
 	
@@ -155,6 +156,7 @@ public class UserProfileFragment extends ListFragment {
 							for (int index = 0; index < jArrayData.length(); ++index) {
 								JSONObject tmpJObj = jArrayData.getJSONObject(index);
 								JSONObject jObjLikes = getJSONEdge(tmpJObj, "likes");
+								JSONObject jObjComments = getJSONEdge(tmpJObj, "comments");
 								
 								if (jObjLikes != null) {
 									++likeCount;
@@ -163,7 +165,7 @@ public class UserProfileFragment extends ListFragment {
 								
 								
 								String story = getStory(tmpJObj);
-								createPost(story, jObjLikes);
+								createPost(story, jObjLikes, jObjComments);
 							}
 												
 							
@@ -201,7 +203,7 @@ public class UserProfileFragment extends ListFragment {
 	
 	private int postCount = 0;
 	
-	private void createPost(String story, JSONObject jObjLikes) {
+	private void createPost(String story, JSONObject jObjLikes, final JSONObject jObjComments) {
 		JSONArray jArrayLikesData = null;
 		
 		// There is likes count
@@ -224,7 +226,12 @@ public class UserProfileFragment extends ListFragment {
 				@Override
 				public void onClick(View v) {
 					TextView tv = (TextView) v;
-					selectedCallback.onPostSelected(tv.getText().toString());
+					if (jObjComments != null) {
+						setComments(jObjComments);
+					} else {
+						selectedCallback.onPostSelected(null);
+					}
+					
 				}
 			});
 			
@@ -246,6 +253,35 @@ public class UserProfileFragment extends ListFragment {
 			posts.add(newPost);
 		}
 
+	}
+	
+	private void setComments(JSONObject jObjComments) {
+		ArrayList<String> comments = new ArrayList<String>();
+		JSONArray comData = null;
+		try {
+			comData = jObjComments.getJSONArray("data");
+			
+			if (comData == null) return;
+			
+			for (int index = 0; index < comData.length(); ++index) {
+				JSONObject tmpData = comData.getJSONObject(index);
+				
+				JSONObject from = tmpData.getJSONObject("from");
+				String fromUserName = from.getString("name");
+				
+				String msg = tmpData.getString("message");
+				comments.add("From: " + fromUserName + ": " + msg);
+			}
+			
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if (comments.size() > 0) {
+			selectedCallback.onPostSelected(comments);
+		}
+		
 	}
 	
 	
