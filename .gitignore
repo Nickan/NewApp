@@ -40,5 +40,5 @@ Icon
 
 
 
-bin/classes
-bin/dexedLibs
+bin/classes/
+bin/dexedLibs/

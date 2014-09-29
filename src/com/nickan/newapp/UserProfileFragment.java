@@ -14,6 +14,7 @@ import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
+import com.facebook.model.GraphObject;
 import com.facebook.model.GraphUser;
 
 import android.app.Activity;
@@ -147,7 +148,14 @@ public class UserProfileFragment extends ListFragment {
 							return;
 						}
 						
-						JSONObject jObject = response.getGraphObject().getInnerJSONObject();
+						GraphObject graphObject = response.getGraphObject();
+						
+						if (graphObject == null) {
+							Log.e(TAG, "onCompleted() GraphObject is null");
+							return;
+						}
+						
+						JSONObject jObject = graphObject.getInnerJSONObject();
 						
 						int likeCount = 0;
 						try {

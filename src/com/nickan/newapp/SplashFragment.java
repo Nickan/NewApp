@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import com.facebook.HttpMethod;
@@ -39,8 +40,23 @@ public class SplashFragment extends Fragment {
 	    
 	    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
 	    authButton.setFragment(this);
-	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
+	//    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
+	    authButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				onClickLogin(v);
+			}
+		});
+	    
+	    Log.e(TAG, "onCreateView()");
 	    return view;
+	}
+	
+	private void onClickLogin(View view) {
+		LoginButton loginButton = (LoginButton) view;
+		loginButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
+		Log.e(TAG, "Log in clicked");
 	}
 	
 	
@@ -56,9 +72,15 @@ public class SplashFragment extends Fragment {
 	    if (state.isOpened()) {
 	        Log.e(TAG, "Logged in...");
 	    //    clearTokenAccess(session);
+	        showPermissions();
 	    } else if (state.isClosed()) {
 	        Log.e(TAG, "Logged out...");
 	        session.closeAndClearTokenInformation();
+	        showPermissions();
+	        
+	        if (exception != null) {
+	        	Log.e(TAG, "Error: " + exception.getMessage());
+	        }
 	    }
 	    
 	}
@@ -114,14 +136,14 @@ public class SplashFragment extends Fragment {
 	
 	
 	private void showPermissions() {
-		/*
+		Session session = Session.getActiveSession();
 		List<String> perms = session.getPermissions();
 	    if (perms != null) {
 	    	for (String tmp : perms) {
 	    		Log.e(TAG, "Permission: " + tmp);
 	    	}
 	    }
-	    */
+	    
 	}
 
 }

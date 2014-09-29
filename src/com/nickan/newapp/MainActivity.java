@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.content.Intent;
@@ -26,6 +27,7 @@ import android.view.MenuItem;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
+import com.facebook.widget.LoginButton;
 
 public class MainActivity extends FragmentActivity implements UserProfileFragment.OnUserProfileSelectedListener {
 	private static final String TAG = "MainActivity";
@@ -34,10 +36,7 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 		
 		@Override
 		public void call(Session session, SessionState state, Exception exception) {
-			if (state != null && state.isOpened()) {
-				onSessionStateChange(session, state, exception);
-				Log.e(TAG, "call");
-			}
+			onSessionStateChange(session, state, exception);
 		}
 	};
 	private UiLifecycleHelper uiHelper;
@@ -56,23 +55,13 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 			FragmentManager fm = getSupportFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
 			
-		//	ft.add(R.id.container, new SplashFragment());
-		//	ft.commit();
-			replaceCurrentFragment(new SplashFragment());
+			SplashFragment splashFragment = new SplashFragment();
+		//	replaceCurrentFragment(splashFragment, false);
+			ft.add(R.id.container, splashFragment);
+			ft.commit();
 		}
 	
 	}
-	
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-	    // Inflate the menu items for use in the action bar
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.main_activity_action, menu);
-	    MenuItem item = menu.findItem(R.id.action_search);
-	    return super.onCreateOptionsMenu(menu);
-	}
-
 	
 	private void getHashKey() {
 		try {
@@ -99,18 +88,16 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 			Fragment currentFragment = getCurrentFragment();
 			
 			if (currentFragment instanceof SplashFragment) {
-				replaceCurrentFragment(new UserProfileFragment());
+				replaceCurrentFragment(new UserProfileFragment(), true);
+				
+				Log.e(TAG, "To SplashFragment");
 			}
+			invalidateOptionsMenu();
+			
+			Log.e(TAG, "onSessionStateChange()" + getCurrentFragment().toString());
+		} else {
+			Log.e(TAG, "onSessionStateChange() + null");
 		}
-	}
-	
-	private void replaceCurrentFragment(Fragment newFragment) {
-		FragmentManager fm = getSupportFragmentManager();
-		FragmentTransaction ft = fm.beginTransaction();
-		
-		ft.replace(R.id.container, newFragment);
-		ft.addToBackStack(null);
-		ft.commit();
 	}
 	
 	
@@ -127,7 +114,7 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 		super.onResume();
 		Session session = Session.getActiveSession();
 		
-		onSessionStateChange(session, null, null);
+		onSessionStateChange(session, session.getState(), null);
 		uiHelper.onResume();
 	}
 	
@@ -143,21 +130,29 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 		uiHelper.onDestroy();
 	}
 	
-	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
+		Log.e(TAG, "onPrepareOptionsMenu()");
 		
-		/*
-	    if (fragments[USER_FRAGMENT].isVisible()) {
-	        settings = menu.add(R.string.settings);
+	    if (getCurrentFragment() instanceof SplashFragment) {
+	    //	menu.removeItem(R.string.settings);
+	    //    settings = null;
+	    	MenuItem searchItem = menu.findItem(R.id.action_search);
+	    	MenuItem setttingsItem = menu.findItem(R.id.action_settings);
 	    } else {
-	    	menu.removeItem(R.string.settings);
-	        settings = null;
+	    //	settings = menu.add(R.string.settings);
+	    	initializeActionButtons(menu);
 	    }
-	    */
-
-	    return true;
+	    
+	    return super.onPrepareOptionsMenu(menu);
+	}
+	
+	private void initializeActionButtons(Menu menu) {
+		// Inflate the menu items for use in the action bar
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.main_activity_action, menu);
+	    MenuItem item = menu.findItem(R.id.action_search);
 	}
 	
 	@Override
@@ -192,23 +187,30 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 
 	@Override
 	public void onPostSelected(ArrayList<String> comments) {
-		FragmentManager fm = getSupportFragmentManager();
-		FragmentTransaction ft = fm.beginTransaction();
-		
 		Bundle args = new Bundle();
 		args.putStringArrayList(UserProfileFragment.COMMENT, comments);
 		CommentFragment newComFrag = new CommentFragment();
 		newComFrag.setArguments(args);
 		
-		ft.replace(R.id.container, newComFrag);
-		ft.addToBackStack(null);
-		ft.commit();
-		Log.e(TAG, "Post Clicked");
+		replaceCurrentFragment(newComFrag, true);
 	}
 	
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
+		invalidateOptionsMenu();
+	}
+	
+	
+	private void replaceCurrentFragment(Fragment newFragment, boolean addToBackStack) {
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction ft = fm.beginTransaction();
+		
+		ft.replace(R.id.container, newFragment);
+		if (addToBackStack) {
+			ft.addToBackStack(null);
+		}
+		ft.commit();
 	}
 	
 	private final Fragment getCurrentFragment() {
