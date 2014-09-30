@@ -72,8 +72,7 @@ public class UserProfileFragment extends ListFragment {
 	TextView locale;
 	
 	private ArrayList<TextView> posts = new ArrayList<TextView>();
-	
-	
+
 	private UiLifecycleHelper uiHelper;
 	private Session.StatusCallback callback = new Session.StatusCallback() {
 		
