@@ -36,6 +36,11 @@ Icon
 .Trashes
 
 
-bin\
-gen/
+
+
+
+
+bin/classes/
+bin/dexedLibs/
+bin/
 *.class
