@@ -42,3 +42,4 @@ Icon
 
 bin/classes/
 bin/dexedLibs/
+*.class

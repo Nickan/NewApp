@@ -11,13 +11,12 @@
         android:layout_height="wrap_content"
         android:background="#FBCEB1"
         android:orientation="vertical" >
-        
-        <ListView
-            android:id="@id/android:list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:drawSelectorOnTop="false" />
+
+        <Button
+            android:id="@+id/clear_access_token_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear Access Token" />
 
         <TextView
             android:id="@+id/user_info_text"
@@ -73,6 +72,23 @@
             android:layout_marginTop="20dp"
             android:text="Posts: "
             android:textSize="20sp" />
+        
+        
+        
+        
+        <!-- Will use later, forced to use because I need to implement the communication between Fragments -->
+        <ListView
+              android:id="@id/android:list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="false"
+            android:visibility="invisible" >"
+        </ListView>
+        
+        
     </LinearLayout>
+    
+    
 
 </ScrollView>

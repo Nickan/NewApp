@@ -38,14 +38,15 @@ public class SplashFragment extends Fragment {
 	        Bundle savedInstanceState) {
 	    View view = inflater.inflate(R.layout.splash, container, false);
 	    
+	    
 	    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
 	    authButton.setFragment(this);
-	//    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
+	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
 	    authButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				onClickLogin(v);
+			//	onClickLogin(v);
 			}
 		});
 	    
@@ -71,7 +72,7 @@ public class SplashFragment extends Fragment {
 	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
 	    if (state.isOpened()) {
 	        Log.e(TAG, "Logged in...");
-	    //    clearTokenAccess(session);
+	   //     clearTokenAccess(session);
 	        showPermissions();
 	    } else if (state.isClosed()) {
 	        Log.e(TAG, "Logged out...");
@@ -83,15 +84,6 @@ public class SplashFragment extends Fragment {
 	        }
 	    }
 	    
-	}
-	
-	private void clearTokenAccess(Session session) {
-		new Request(session, "/me/permissions", null, HttpMethod.DELETE,
-				new Request.Callback() {
-					public void onCompleted(Response response) {
-					}
-
-				}).executeAsync();
 	}
 	
 	

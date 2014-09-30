@@ -27,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableRow.LayoutParams;
@@ -88,6 +89,8 @@ public class UserProfileFragment extends ListFragment {
 		view = inflater.inflate(R.layout.user_profile, container, false);
 		uiHelper = new UiLifecycleHelper(getActivity(), callback);
 		uiHelper.onCreate(savedInstanceState);
+		
+		initializeDebugTools(view);
 		return view;
 	}
 	
@@ -339,6 +342,48 @@ public class UserProfileFragment extends ListFragment {
 		uiHelper.onDestroy();
 	}
 	
+	
+	private void clearTokenAccess(final Session session) {
+		new Request(session, "/me/permissions", null, HttpMethod.DELETE,
+				new Request.Callback() {
+					public void onCompleted(Response response) {
+						Log.e(TAG, "onCompleted() clearing token access");
+						showPermissions(session);
+					}
+
+				}).executeAsync();
+	}
+	
+	private void showPermissions(Session session) {
+		List<String> perms = session.getPermissions();
+	    if (perms != null) {
+	    	for (String tmp : perms) {
+	    		Log.e(TAG, "Permission: " + tmp);
+	    	}
+	    }
+	    
+	}
+	
+	private void initializeDebugTools(View view) {
+		Button clearAccessTokenButton = (Button) view.findViewById(R.id.clear_access_token_button);
+		clearAccessTokenButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Session session = Session.getActiveSession();
+				if (session != null && session.isOpened()) {
+					Log.e(TAG, "Clear access token clicked!");
+					clearTokenAccess(session);
+					showPermissions(session);
+				} else {
+					Log.e(TAG, "session is null or closed");
+				}
+				
+			}
+		});
+	}
+	
+	
 	// For debugging
 	public static void showSessionStatus(String identifier) {
 		Session session = Session.getActiveSession();
@@ -357,5 +402,7 @@ public class UserProfileFragment extends ListFragment {
 			Log.e(TAG + " " + identifier, "session neither open nor close");
 		}
 	}
+	
+	
 	
 }

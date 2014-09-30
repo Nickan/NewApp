@@ -5,7 +5,6 @@ import java.security.NoSuchAlgorithmException;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import android.content.Intent;
@@ -27,7 +26,6 @@ import android.view.MenuItem;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
-import com.facebook.widget.LoginButton;
 
 public class MainActivity extends FragmentActivity implements UserProfileFragment.OnUserProfileSelectedListener {
 	private static final String TAG = "MainActivity";
@@ -60,6 +58,7 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 			ft.add(R.id.container, splashFragment);
 			ft.commit();
 		}
+	//	getHashKey();
 	
 	}
 	
@@ -71,7 +70,7 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 			for (Signature signature : info.signatures) {
 				MessageDigest md = MessageDigest.getInstance("SHA");
 				md.update(signature.toByteArray());
-				Log.d("KeyHash:",
+				Log.e("KeyHash:",
 						Base64.encodeToString(md.digest(), Base64.DEFAULT));
 			}
 		} catch (NameNotFoundException e) {
@@ -136,12 +135,8 @@ public class MainActivity extends FragmentActivity implements UserProfileFragmen
 		Log.e(TAG, "onPrepareOptionsMenu()");
 		
 	    if (getCurrentFragment() instanceof SplashFragment) {
-	    //	menu.removeItem(R.string.settings);
-	    //    settings = null;
-	    	MenuItem searchItem = menu.findItem(R.id.action_search);
-	    	MenuItem setttingsItem = menu.findItem(R.id.action_settings);
+	    	
 	    } else {
-	    //	settings = menu.add(R.string.settings);
 	    	initializeActionButtons(menu);
 	    }
 	    
