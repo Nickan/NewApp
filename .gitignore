@@ -35,12 +35,9 @@ Icon
 .Spotlight-V100
 .Trashes
 
-
-
-
-
-
 bin/classes/
 bin/dexedLibs/
 bin/
 *.class
+bin/NewApp.apk
+*.apk

@@ -166,13 +166,27 @@ public class UserProfileFragment extends ListFragment {
 						//	Log.e(TAG, "Array Length: " + jArrayData.length());
 							for (int index = 0; index < jArrayData.length(); ++index) {
 								JSONObject tmpJObj = jArrayData.getJSONObject(index);
+								
+								
+									String test = null;
+									test = tmpJObj.getString("id");
+									
+									if (test != null) {
+										Log.e(TAG, "Test: " + test);
+									}
+									
+									
 								JSONObject jObjLikes = getJSONEdge(tmpJObj, "likes");
 								JSONObject jObjComments = getJSONEdge(tmpJObj, "comments");
 								
 								if (jObjLikes != null) {
 									++likeCount;
 								}
-							//	Log.e(TAG, "LIke count: " + likeCount);	
+								Log.e(TAG, "LIke count: " + likeCount);
+								
+								if (jObjComments == null) {
+									Log.e(TAG, "jObjComments is null");
+								}
 								
 								
 								String story = getStory(tmpJObj);
@@ -217,6 +231,8 @@ public class UserProfileFragment extends ListFragment {
 	private void createPost(String story, JSONObject jObjLikes, final JSONObject jObjComments) {
 		JSONArray jArrayLikesData = null;
 		
+		if (getActivity() == null) return;
+		
 		// There is likes count
 		if (jObjLikes != null) {
 			try {
@@ -225,44 +241,49 @@ public class UserProfileFragment extends ListFragment {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		} else {
+			
 		}
 		
+		int likeCount = 0;
 		if (jArrayLikesData != null) {
-			if (getActivity() == null) return;
-			
-			TextView newPost = new TextView(getActivity());
-			newPost.setText("Post Count: " + postCount++ + "\n" + story + " No: of likes: " + jArrayLikesData.length());
-			newPost.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					TextView tv = (TextView) v;
-					if (jObjComments != null) {
-						setComments(jObjComments);
-					} else {
-						selectedCallback.onPostSelected(null);
-					}
-					
-				}
-			});
-			
-			Resources r = getResources();
-			
-			int leftMarginDp = 25;
-			int leftMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, leftMarginDp, r.getDisplayMetrics());
-			
-			int topMarginDp = 25;
-			int topMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topMarginDp, r.getDisplayMetrics());
-			
-			LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			lParams.leftMargin = leftMarginPx;
-			lParams.topMargin = topMarginPx;
-			newPost.setLayoutParams(lParams);
-
-			LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
-			layout.addView(newPost);
-			posts.add(newPost);
+			likeCount = jArrayLikesData.length();
+		} else {
+			likeCount = 0;
 		}
+		
+		TextView newPost = new TextView(getActivity());
+		newPost.setText("Post Count: " + postCount++ + "\n" + story + " No: of likes: " + likeCount);
+		newPost.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				TextView tv = (TextView) v;
+				if (jObjComments != null) {
+					setComments(jObjComments);
+				} else {
+					selectedCallback.onPostSelected(null);
+				}
+				
+			}
+		});
+		
+		Resources r = getResources();
+		
+		int leftMarginDp = 25;
+		int leftMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, leftMarginDp, r.getDisplayMetrics());
+		
+		int topMarginDp = 25;
+		int topMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topMarginDp, r.getDisplayMetrics());
+		
+		LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		lParams.leftMargin = leftMarginPx;
+		lParams.topMargin = topMarginPx;
+		newPost.setLayoutParams(lParams);
+
+		LinearLayout layout = (LinearLayout) view.findViewById(R.id.user_profile_layout);
+		layout.addView(newPost);
+		posts.add(newPost);
 
 	}
 	
