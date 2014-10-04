@@ -29,7 +29,12 @@ public class CommentFragment extends Fragment {
 	private void showComment(View view) {
 		Intent intent = getActivity().getIntent();
 		Bundle args = getArguments();
-		ArrayList<String> comments = args.getStringArrayList(UserProfileFragment.COMMENT);
+		
+		if (args == null) {
+			Log.e(TAG, "Bundle is null");
+			return;
+		}
+		ArrayList<String> comments = args.getStringArrayList(FeedFragment.COMMENT);
 		
 		Resources r = getResources();
 		
