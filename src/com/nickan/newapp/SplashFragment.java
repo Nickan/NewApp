@@ -3,25 +3,42 @@ package com.nickan.newapp;
 import java.util.Arrays;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
-import com.facebook.HttpMethod;
-import com.facebook.Request;
-import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.widget.LoginButton;
 
 
-public class SplashFragment extends Fragment {
+public class SplashFragment extends ListFragment {
+	private boolean alreadyLoggedIn = false;
+	
+	private OnSessionOpenStateListener onSessionOpenCallback;
+	// For communication with the Main Fragment
+	public interface OnSessionOpenStateListener {
+		public void onSessionOpen();
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		
+		try {
+			onSessionOpenCallback = (OnSessionOpenStateListener) activity;
+		} catch (ClassCastException e) {
+			throw new ClassCastException(activity.toString()
+                    + " must implement OnUserProfileSelectedListener");
+		}
+	}
+	
 	private static final String TAG = "SplashFragment";
 	
 	private Session.StatusCallback callback = new Session.StatusCallback() {
@@ -37,27 +54,12 @@ public class SplashFragment extends Fragment {
 	        ViewGroup container, 
 	        Bundle savedInstanceState) {
 	    View view = inflater.inflate(R.layout.splash, container, false);
-	    
-	    
 	    LoginButton authButton = (LoginButton) view.findViewById(R.id.loginButton);
 	    authButton.setFragment(this);
 	    authButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
-	    authButton.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-			//	onClickLogin(v);
-			}
-		});
 	    
 	    Log.e(TAG, "onCreateView()");
 	    return view;
-	}
-	
-	private void onClickLogin(View view) {
-		LoginButton loginButton = (LoginButton) view;
-		loginButton.setReadPermissions(Arrays.asList("user_likes", "user_status", "read_stream"));
-		Log.e(TAG, "Log in clicked");
 	}
 	
 	
@@ -72,6 +74,11 @@ public class SplashFragment extends Fragment {
 	private void onSessionStateChange(Session session, SessionState state, Exception exception) {
 	    if (state.isOpened()) {
 	        Log.e(TAG, "Logged in...");
+	        if (!alreadyLoggedIn) {
+	        	alreadyLoggedIn = true;
+	        	onSessionOpenCallback.onSessionOpen();
+	        }
+	        
 	   //     clearTokenAccess(session);
 	        showPermissions();
 	    } else if (state.isClosed()) {
