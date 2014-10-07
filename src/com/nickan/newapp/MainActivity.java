@@ -70,14 +70,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
 	@Override
 	public void onPostSelected(ArrayList<String> comments) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
-		// TODO Auto-generated method stub
-		
+		viewPager.setCurrentItem(tab.getPosition());
 	}
 
 	@Override

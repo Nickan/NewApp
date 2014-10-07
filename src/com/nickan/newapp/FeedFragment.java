@@ -96,7 +96,7 @@ public class FeedFragment extends ListFragment {
 	}
 	
 	// {{ UI Creation
-
+	int universalTextSize = 15;
 	/*
 	 * UI Creation
 	 */
@@ -108,16 +108,17 @@ public class FeedFragment extends ListFragment {
 		ImageView userPhoto = newImageView(1000, 40, 40, picId, 
 				RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE, 10, 0, 10, 0);
 		
-		TextView user_name = newTextView(1001, 10, RelativeLayout.RIGHT_OF, userPhoto.getId(), name, 0, 0, 10, 0);
+		
+		TextView user_name = newTextView(1001, universalTextSize, RelativeLayout.RIGHT_OF, userPhoto.getId(), name, 0, 0, 10, 0);
 		
 		ArrayList<RuleAlignment> dateRuleAlign = new ArrayList<RuleAlignment>();
 		dateRuleAlign.add(new RuleAlignment(RelativeLayout.ALIGN_LEFT, user_name.getId()));
 		dateRuleAlign.add(new RuleAlignment(RelativeLayout.BELOW, user_name.getId()));
-		TextView date_and_time = newTextView(1002, 10, dateRuleAlign, 
+		TextView date_and_time = newTextView(1002, universalTextSize, dateRuleAlign, 
 				dateAndTime, 0, 0, 0, 0);
 		
-		TextView user_comment = newTextView(1003, 10, RelativeLayout.BELOW, userPhoto.getId(), userComment, 10, 0, 0, 0);
-		TextView comment_count = newTextView(1004, 10, Arrays.asList(new RuleAlignment(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
+		TextView user_comment = newTextView(1003, universalTextSize, RelativeLayout.BELOW, userPhoto.getId(), userComment, 10, 0, 0, 0);
+		TextView comment_count = newTextView(1004, universalTextSize, Arrays.asList(new RuleAlignment(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
 									, new RuleAlignment(RelativeLayout.BELOW, user_comment.getId())), commentCount, 10, 0, 0, 0);
 		
 		postLayout.addView(userPhoto);
@@ -156,6 +157,8 @@ public class FeedFragment extends ListFragment {
 		return postLayout;
 	}
 	
+	int buttonTextSize = 12;
+	
 	private RelativeLayout newLikeButton() {
 		RelativeLayout likeLayout = new RelativeLayout(getActivity());
 		RelativeLayout.LayoutParams rParams = new RelativeLayout.LayoutParams(0, 
@@ -174,7 +177,7 @@ public class FeedFragment extends ListFragment {
 		ImageView likeImg = newImageView(1011, 14, 14,
 				R.drawable.share_button, RelativeLayout.CENTER_IN_PARENT,
 				RelativeLayout.TRUE, 0, 0, 0, 0);
-		TextView likeMsg = newTextView(1012, 7,
+		TextView likeMsg = newTextView(1012, buttonTextSize,
 				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Share",
 				0, 0, 0, 0);
 		innerLayout.addView(likeImg);
@@ -207,7 +210,7 @@ public class FeedFragment extends ListFragment {
 		
 		ImageView commentImg = newImageView(1011, 14, 14, R.drawable.comment_button, 
 				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, 0, 0, 0, 0);
-		TextView commentMsg = newTextView(1012, 7, RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Comment", 0, 0, 0, 0);
+		TextView commentMsg = newTextView(1012, buttonTextSize, RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Comment", 0, 0, 0, 0);
 		innerLayout.addView(commentImg);
 		innerLayout.addView(commentMsg);
 		
@@ -239,7 +242,7 @@ public class FeedFragment extends ListFragment {
 		ImageView shareImg = newImageView(1011, 14, 14,
 				R.drawable.share_button, RelativeLayout.CENTER_IN_PARENT,
 				RelativeLayout.TRUE, 0, 0, 0, 0);
-		TextView shareMsg = newTextView(1012, 7,
+		TextView shareMsg = newTextView(1012, buttonTextSize,
 				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE,
 				"Share", 0, 0, 0, 0);
 		innerLayout.addView(shareImg);
@@ -260,6 +263,7 @@ public class FeedFragment extends ListFragment {
 	}
 	
 	private int toPixelTextSize(int sp) {
+		//return sp;
 		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, getResources().getDisplayMetrics());
 	}
 	
@@ -314,7 +318,7 @@ public class FeedFragment extends ListFragment {
 		TextView newTextView = new TextView(getActivity());
 		newTextView.setId(id);
 		newTextView.setText(text);
-		newTextView.setTextSize(toPixelTextSize(textSize));
+		newTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
 		newTextView.setLayoutParams(newTextParams);
 		
 		return newTextView;
@@ -338,7 +342,7 @@ public class FeedFragment extends ListFragment {
 		TextView newTextView = new TextView(getActivity());
 		newTextView.setId(id);
 		newTextView.setText(text);
-		newTextView.setTextSize(toPixelTextSize(textSize));
+		newTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
 		newTextView.setLayoutParams(newTextParams);
 		
 		return newTextView;
@@ -397,7 +401,6 @@ public class FeedFragment extends ListFragment {
 				JSONObject feedJObj = response.getGraphObject().getInnerJSONObject();
 				JSONArray dataArray = getJSONArray(feedJObj, "data");
 				
-				
 				View view = getView();
 
 				LinearLayout feedLayout = getBaseLayout(view);
@@ -453,7 +456,9 @@ public class FeedFragment extends ListFragment {
 			}
 		}).executeAsync();
 	}
+	// }}
 	
+	// {{ Helper Information getter
 	private JSONArray getJSONArray(JSONObject jObjParent, String edgeName) {
 		try {
 			return jObjParent.getJSONArray(edgeName);
