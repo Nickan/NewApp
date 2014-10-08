@@ -3,23 +3,27 @@ package com.nickan.newapp;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
 
 public class FragPagerAdapter extends FragmentPagerAdapter {
+	private FeedFragment feedFragment;
+	private FriendRequestsFragment friendRequestsFragment;
 
 	public FragPagerAdapter(FragmentManager fm) {
 		super(fm);
-		// TODO Auto-generated constructor stub
+		feedFragment = new FeedFragment();
+		friendRequestsFragment = new FriendRequestsFragment();
 	}
 
 	@Override
 	public Fragment getItem(int index) {
 		switch (index) {
 		case 0:
-			return new FeedFragment();
+			return feedFragment;
 		case 1:
-			return new CommentFragment();
+			return friendRequestsFragment;
 		default:
-			return new CommentFragment();	// <-- To be changed later
+			return friendRequestsFragment;	// <-- To be changed later
 		}
 	}
 

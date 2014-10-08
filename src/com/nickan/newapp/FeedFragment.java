@@ -3,18 +3,12 @@ package com.nickan.newapp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.facebook.HttpMethod;
-import com.facebook.Request;
-import com.facebook.Response;
-import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.UiLifecycleHelper;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -24,6 +18,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -31,18 +26,25 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.facebook.HttpMethod;
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.UiLifecycleHelper;
+
 public class FeedFragment extends ListFragment {
 	// {{ Local variables
-	public static final String COMMENT = "com.nickan.newapp.FeedFragment.COMMENT";
+	public static final String COMMENTS= "com.nickan.newapp.FeedFragment.COMMENTS";
 	
-	private OnFeedFragmentListener selectedCallback;
+	private OnFeedFragmentListener postSelectedCallback;
 	
 	public interface OnFeedFragmentListener {
 		/**
 		 * Called every time a post is clicked
 		 * @param comments
 		 */
-		public void onPostSelected(ArrayList<String> comments);
+		public void onPostSelected(String comments);
 	}
 	
 	@Override
@@ -50,7 +52,7 @@ public class FeedFragment extends ListFragment {
 		super.onAttach(activity);
 		
 		try {
-			selectedCallback = (OnFeedFragmentListener) activity;
+			postSelectedCallback = (OnFeedFragmentListener) activity;
 		} catch (ClassCastException e) {
 			throw new ClassCastException(activity.toString()
                     + " must implement OnUserProfileSelectedListener");
@@ -82,6 +84,8 @@ public class FeedFragment extends ListFragment {
 			onStateStatusChange(session, state, exception);
 		}
 	};
+	
+	private HashMap<String, JSONArray> commentsMap;
 	// }}
 	
 	@Override
@@ -90,8 +94,13 @@ public class FeedFragment extends ListFragment {
 		uiHelper = new UiLifecycleHelper(getActivity(), callback);
 		uiHelper.onCreate(savedInstanceState);
 		
+		commentsMap = new HashMap<String, JSONArray>();
+		
 		//...
 		Log.e(TAG, "onCreateView()");
+		
+		ViewUtil.activity = getActivity();
+		ViewUtil.dm = getResources().getDisplayMetrics();
 		return view;
 	}
 	
@@ -100,26 +109,33 @@ public class FeedFragment extends ListFragment {
 	/*
 	 * UI Creation
 	 */
-	private RelativeLayout newPostLayout(int picId, String name, String dateAndTime, String userComment, String commentCount) {
+	private RelativeLayout newPostLayout(int picId, String name, String dateAndTime, String userComment, JSONArray jArrayComments) {
 		// Main post layout
 		RelativeLayout postLayout = new RelativeLayout(getActivity());
 		postLayout.setBackgroundColor(Color.WHITE);
 		
-		ImageView userPhoto = newImageView(1000, 40, 40, picId, 
+		ImageView userPhoto = ViewUtil.newImageView(1000, 40, 40, picId, 
 				RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE, 10, 0, 10, 0);
-		
-		
-		TextView user_name = newTextView(1001, universalTextSize, RelativeLayout.RIGHT_OF, userPhoto.getId(), name, 0, 0, 10, 0);
+
+		TextView user_name = ViewUtil.newTextView(1001, universalTextSize, RelativeLayout.RIGHT_OF, userPhoto.getId(), name, 0, 0, 10, 0);
 		
 		ArrayList<RuleAlignment> dateRuleAlign = new ArrayList<RuleAlignment>();
 		dateRuleAlign.add(new RuleAlignment(RelativeLayout.ALIGN_LEFT, user_name.getId()));
 		dateRuleAlign.add(new RuleAlignment(RelativeLayout.BELOW, user_name.getId()));
-		TextView date_and_time = newTextView(1002, universalTextSize, dateRuleAlign, 
+		TextView date_and_time = ViewUtil.newTextView(1002, universalTextSize, dateRuleAlign, 
 				dateAndTime, 0, 0, 0, 0);
 		
-		TextView user_comment = newTextView(1003, universalTextSize, RelativeLayout.BELOW, userPhoto.getId(), userComment, 10, 0, 0, 0);
-		TextView comment_count = newTextView(1004, universalTextSize, Arrays.asList(new RuleAlignment(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
-									, new RuleAlignment(RelativeLayout.BELOW, user_comment.getId())), commentCount, 10, 0, 0, 0);
+		TextView user_comment = ViewUtil.newTextView(1003, universalTextSize, RelativeLayout.BELOW, userPhoto.getId(), userComment, 10, 0, 0, 0);
+		
+		int commentsCount = 0;
+		if (jArrayComments != null) {
+			commentsCount = jArrayComments.length();
+		}
+		
+		TextView comment_count = ViewUtil.newTextView(1004, universalTextSize, Arrays.asList(
+				new RuleAlignment(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
+						, new RuleAlignment(RelativeLayout.BELOW, user_comment.getId())), 
+						Integer.toString(commentsCount), 10, 0, 0, 0);
 		
 		postLayout.addView(userPhoto);
 		postLayout.addView(user_name);
@@ -127,16 +143,16 @@ public class FeedFragment extends ListFragment {
 		postLayout.addView(user_comment);
 		postLayout.addView(comment_count);
 		
-		postLayout.addView(newPostButton(comment_count.getId()));
+		postLayout.addView(newPostButtons(comment_count.getId(), jArrayComments));
 		
 		return postLayout;
 	}
 	
-	private LinearLayout newPostButton(int parentId) {
+	private LinearLayout newPostButtons(int parentId, JSONArray jArrayComments) {
 		LinearLayout postLayout = new LinearLayout(getActivity());
 		
 		RelativeLayout.LayoutParams postLayoutParams = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT, toPixelDimension(25));
+				RelativeLayout.LayoutParams.MATCH_PARENT, ViewUtil.toPixelDimension(25));
 		
 		postLayoutParams.addRule(RelativeLayout.BELOW, parentId);
 		postLayout.setLayoutParams(postLayoutParams);
@@ -148,7 +164,7 @@ public class FeedFragment extends ListFragment {
 		
 		LinearLayout.LayoutParams commentLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 
 				LinearLayout.LayoutParams.MATCH_PARENT, 1);
-		postLayout.addView(newCommentButton(), commentLayoutParams);
+		postLayout.addView(newCommentButton(jArrayComments), commentLayoutParams);
 		
 		LinearLayout.LayoutParams shareLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 
 				LinearLayout.LayoutParams.MATCH_PARENT, 1);
@@ -174,10 +190,10 @@ public class FeedFragment extends ListFragment {
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
 		innerLayout.setLayoutParams(innerParams);
 
-		ImageView likeImg = newImageView(1011, 14, 14,
+		ImageView likeImg = ViewUtil.newImageView(1011, 14, 14,
 				R.drawable.share_button, RelativeLayout.CENTER_IN_PARENT,
 				RelativeLayout.TRUE, 0, 0, 0, 0);
-		TextView likeMsg = newTextView(1012, buttonTextSize,
+		TextView likeMsg = ViewUtil.newTextView(1012, buttonTextSize,
 				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Share",
 				0, 0, 0, 0);
 		innerLayout.addView(likeImg);
@@ -193,8 +209,21 @@ public class FeedFragment extends ListFragment {
 		return likeLayout;
 	}
 	
-	private RelativeLayout newCommentButton() {
+	private RelativeLayout newCommentButton(JSONArray jArrayComments) {
 		RelativeLayout commentLayout = new RelativeLayout(getActivity());
+		commentLayout.setId(IdCreator.getId());
+		commentsMap.put(Integer.toString(commentLayout.getId()), jArrayComments);
+		
+		// Insert the comments
+		commentLayout.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				JSONArray comments = commentsMap.get(Integer.toString(v.getId()));
+				postSelectedCallback.onPostSelected(comments.toString());
+			}
+		});
+		
 		RelativeLayout.LayoutParams commentParams = new RelativeLayout.LayoutParams(0, 
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 		
@@ -204,13 +233,14 @@ public class FeedFragment extends ListFragment {
 		// Inner layout
 		LinearLayout innerLayout = new LinearLayout(getActivity());
 		innerLayout.setOrientation(LinearLayout.HORIZONTAL);
-		LinearLayout.LayoutParams innerParams = new LinearLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 
+		LinearLayout.LayoutParams innerParams = new LinearLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
 		innerLayout.setLayoutParams(innerParams);
 		
-		ImageView commentImg = newImageView(1011, 14, 14, R.drawable.comment_button, 
+		ImageView commentImg = ViewUtil.newImageView(1011, 14, 14, R.drawable.comment_button, 
 				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, 0, 0, 0, 0);
-		TextView commentMsg = newTextView(1012, buttonTextSize, RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Comment", 0, 0, 0, 0);
+		TextView commentMsg = ViewUtil.newTextView(1012, buttonTextSize, RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Comment", 0, 0, 0, 0);
 		innerLayout.addView(commentImg);
 		innerLayout.addView(commentMsg);
 		
@@ -239,10 +269,10 @@ public class FeedFragment extends ListFragment {
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
 		innerLayout.setLayoutParams(innerParams);
 
-		ImageView shareImg = newImageView(1011, 14, 14,
+		ImageView shareImg = ViewUtil.newImageView(1011, 14, 14,
 				R.drawable.share_button, RelativeLayout.CENTER_IN_PARENT,
 				RelativeLayout.TRUE, 0, 0, 0, 0);
-		TextView shareMsg = newTextView(1012, buttonTextSize,
+		TextView shareMsg = ViewUtil.newTextView(1012, buttonTextSize,
 				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE,
 				"Share", 0, 0, 0, 0);
 		innerLayout.addView(shareImg);
@@ -256,124 +286,6 @@ public class FeedFragment extends ListFragment {
 		shareLayout.addView(innerLayout, innerLayoutParams);
 		
 		return shareLayout;
-	}
-	
-	private int toPixelDimension(int dp) {
-		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
-	}
-	
-	private int toPixelTextSize(int sp) {
-		//return sp;
-		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, getResources().getDisplayMetrics());
-	}
-	
-	private ImageView newImageView(int id, int width, int height, int resId, int ruleAlignParent, int anchorViewId, int mLeft, int mRight,
-			int mTop, int mBottom) {
-		int pixWidth = toPixelDimension(width);
-		int pixHeight = toPixelDimension(height);
-		
-		RelativeLayout.LayoutParams newImgParams = new RelativeLayout.LayoutParams(pixWidth, pixHeight);
-		newImgParams.addRule(ruleAlignParent, anchorViewId);
-		newImgParams.setMargins(toPixelDimension(mLeft), toPixelDimension(mTop), toPixelDimension(mTop), toPixelDimension(mBottom));
-		
-		ImageView newImgView = new ImageView(getActivity());
-		newImgView.setId(id);
-		newImgView.setBackgroundResource(resId);
-		newImgView.setLayoutParams(newImgParams);
-
-		return newImgView;
-	}
-	
-	private ImageView newImageView(int id, int width, int height, int resId, List<RuleAlignment> rules, 
-			int mLeft, int mRight, int mTop, int mBottom) {
-		int pixWidth = toPixelDimension(width);
-		int pixHeight = toPixelDimension(height);
-		
-		RelativeLayout.LayoutParams newImgParams = new RelativeLayout.LayoutParams(pixWidth, pixHeight);
-
-		if (rules != null) {
-			for (RuleAlignment tmpRule : rules) {
-				newImgParams.addRule(tmpRule.ruleAlign, tmpRule.anchorViewId);
-			}
-		}
-		
-		ImageView newImgView = new ImageView(getActivity());
-		newImgView.setId(id);
-		newImgView.setBackgroundResource(resId);
-		newImgView.setLayoutParams(newImgParams);
-
-		return newImgView;
-	}
-	
-	private TextView newTextView(int id, int textSize, int ruleAlign, int anchorViewId, String text, 
-			int marginLeft, int marginRight, int marginTop, int marginBottom) {
-		
-		RelativeLayout.LayoutParams newTextParams = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		
-		newTextParams.setMargins(toPixelDimension(marginLeft), toPixelDimension(marginTop), 
-				toPixelDimension(marginRight), toPixelDimension(marginBottom));
-		newTextParams.addRule(ruleAlign, anchorViewId);
-		
-		TextView newTextView = new TextView(getActivity());
-		newTextView.setId(id);
-		newTextView.setText(text);
-		newTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
-		newTextView.setLayoutParams(newTextParams);
-		
-		return newTextView;
-	}
-	
-	private TextView newTextView(int id, int textSize, List<RuleAlignment> rules, String text, 
-			int marginLeft, int marginRight, int marginTop, int marginBottom) {
-		
-		RelativeLayout.LayoutParams newTextParams = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		
-		newTextParams.setMargins(toPixelDimension(marginLeft), toPixelDimension(marginTop), 
-				toPixelDimension(marginRight), toPixelDimension(marginBottom));
-		
-		if (rules != null) {
-			for (RuleAlignment tmpRule : rules) {
-				newTextParams.addRule(tmpRule.ruleAlign, tmpRule.anchorViewId);
-			}
-		}
-		
-		TextView newTextView = new TextView(getActivity());
-		newTextView.setId(id);
-		newTextView.setText(text);
-		newTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
-		newTextView.setLayoutParams(newTextParams);
-		
-		return newTextView;
-	}
-	
-	private TextView newView(int id, int ruleAlign, int anchorView, 
-			int marginLeft, int marginRight, int marginTop, int marginBottom) {
-		
-		RelativeLayout.LayoutParams newViewParams = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		
-		newViewParams.setMargins(toPixelDimension(marginLeft), toPixelDimension(marginTop), 
-				toPixelDimension(marginRight), toPixelDimension(marginBottom));
-		newViewParams.addRule(ruleAlign, anchorView);
-		
-		TextView newView = new TextView(getActivity());
-		newView.setId(id);
-		newView.setLayoutParams(newViewParams);
-		
-		return newView;
-	}
-	
-	
-	private class RuleAlignment {
-		
-		public RuleAlignment(int ruleAlign, int anchorViewId) {
-			this.ruleAlign = ruleAlign;
-			this.anchorViewId = anchorViewId;
-		}
-		public int ruleAlign;
-		public int anchorViewId;
 	}
 	
 	private LinearLayout getBaseLayout(View view) {
@@ -399,7 +311,7 @@ public class FeedFragment extends ListFragment {
 				}
 				
 				JSONObject feedJObj = response.getGraphObject().getInnerJSONObject();
-				JSONArray dataArray = getJSONArray(feedJObj, "data");
+				JSONArray dataArray = JSONUtil.getJSONArray(feedJObj, "data", TAG);
 				
 				View view = getView();
 
@@ -423,87 +335,26 @@ public class FeedFragment extends ListFragment {
 						return;
 					}
 					
-					int likesCount = 0;
-					JSONObject fromJObj = getJSONObject(postJObj, "from");
-					String name = getString(fromJObj, "name");
-					String comment = getString(postJObj, "message");
-					
-					JSONObject likeJObj = getJSONObject(postJObj, "likes");
-					if (likeJObj != null) {
-						JSONArray likeJArray = getJSONArray(likeJObj, "data");
-						
-						if (likeJArray != null) 
-							likesCount = likeJArray.length();
-					}
-					
-					int commentsCount = 0;
-					JSONObject commentsJObj = getJSONObject(postJObj, "comments");
+					JSONObject fromJObj = JSONUtil.getJSONObject(postJObj, "from", TAG);
+					String name = JSONUtil.getString(fromJObj, "name", TAG);
+					String comment = JSONUtil.getString(postJObj, "message", TAG);
+	
+					JSONArray commentsJArray = null;
+					JSONObject commentsJObj = JSONUtil.getJSONObject(postJObj, "comments", TAG);
 						if (commentsJObj != null) {
-						JSONArray commentsJArray = getJSONArray(commentsJObj, "data");
-						
-						
-						if (commentsJArray != null)
-							commentsCount = commentsJArray.length();
+							commentsJArray = JSONUtil.getJSONArray(commentsJObj, "data", TAG);
 					}
 					
-					int margin = toPixelDimension(10);
+					int margin = ViewUtil.toPixelDimension(10);
 					postLayoutParams.setMargins(margin, margin, margin, 0);
 					feedLayout.addView(newPostLayout(R.drawable.com_facebook_profile_picture_blank_portrait,
-													name, "Yesterday at 11:00 AM", comment, 
-													likesCount + " likes " + commentsCount + " comments"),
+													name, "Yesterday at 11:00 AM", comment, commentsJArray),
 													postLayoutParams);
 				}
 			}
 		}).executeAsync();
 	}
-	// }}
 	
-	// {{ Helper Information getter
-	private JSONArray getJSONArray(JSONObject jObjParent, String edgeName) {
-		try {
-			return jObjParent.getJSONArray(edgeName);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.e(TAG, edgeName + " Error getting JSONArray");
-		}
-		return null;
-	}
-	
-	/**
-	 * Getting the JSONObject from the JSONObject parent while handling the exception, returns null if the exception is thrown
-	 * @param jsonObjParent
-	 * @param edgeType
-	 * @return
-	 */
-	private JSONObject getJSONObject(JSONObject jsonObjParent, String edgeType) {
-		try {
-			return jsonObjParent.getJSONObject(edgeType);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.e(TAG, edgeType + " Exception is thrown getting the JSONObject");
-		}
-		return null;
-	}
-	
-	/**
-	 * Getting the String from JSONObject, handles the exception, returns null when exception is thrown
-	 * @param jsonObject
-	 * @param stringName
-	 * @return null if there is no String
-	 */
-	private String getString(JSONObject jsonObject, String stringName) {
-		try {
-			return jsonObject.getString(stringName);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.e(TAG, stringName + "Exception is thrown getting the String");
-		}
-		return null;
-	}
-
 	// }}
 	
 	
@@ -541,6 +392,7 @@ public class FeedFragment extends ListFragment {
 	}
 	
 	// {{ For debuggin
+	/*
 	private void clearTokenAccess(final Session session) {
 		new Request(session, "/me/permissions", null, HttpMethod.DELETE,
 				new Request.Callback() {
@@ -562,7 +414,7 @@ public class FeedFragment extends ListFragment {
 	    
 	}
 	
-	/*
+	
 	private void initializeDebugTools(View view) {
 		Button clearAccessTokenButton = (Button) view.findViewById(R.id.clear_access_token_button);
 		clearAccessTokenButton.setOnClickListener(new OnClickListener() {

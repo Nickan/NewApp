@@ -1,17 +1,17 @@
 package com.nickan.newapp;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.ViewGroup.LayoutParams;
-
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener, 
 	FeedFragment.OnFeedFragmentListener, SplashFragment.OnSessionOpenStateListener {
@@ -19,36 +19,34 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
 	// Swipe implementation
 	private ViewPager viewPager;
-	private FragPagerAdapter fragPagerAdapter;
+	private FragPagerAdapter fragPagerAdapter = null;
+	
+	SplashFragment splashFragment;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		SplashFragment splashFragment = new SplashFragment();
+		splashFragment = new SplashFragment();
 		
 		setContentView(R.layout.main);
 		
 		FragmentManager fm = getSupportFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		ft.add(R.id.main, new SplashFragment());
-		ft.addToBackStack(null);
 		ft.commit();
 	}
 	
 	private void createViewPager() {
 		Log.e(TAG, "createViewPager()");
 		
-		setContentView(R.layout.view_pager);
-		
 		final ActionBar actionBar = getActionBar();
+		actionBar.show();
+		actionBar.removeAllTabs();
 		actionBar.setHomeButtonEnabled(true);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		
 		fragPagerAdapter = new FragPagerAdapter(getSupportFragmentManager());
 		
-//		viewPager = new ViewPager(this);
-//		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//		viewPager.setLayoutParams(params);
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(fragPagerAdapter);
 		viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -66,16 +64,56 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 					.setTabListener(this)
 					);
 		}
+		
 	}
 
 	@Override
-	public void onPostSelected(ArrayList<String> comments) {
+	public void onPostSelected(String comments) {
+		Log.e(TAG, "Post Selected");
 		
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction ft = fm.beginTransaction();
+		
+		Bundle bundle = new Bundle();
+		bundle.putString(FeedFragment.COMMENTS, comments);
+		CommentFragment commentFragment = new CommentFragment();
+		commentFragment.setArguments(bundle);
+		ft.replace(R.id.main, commentFragment);
+		ft.commit();
+		
+		final ActionBar actionBar = getActionBar();
+		actionBar.hide();
+		viewPager.setEnabled(false);
+		viewPager.setVisibility(ViewPager.GONE);
+	}
+	
+	@Override
+	public void onBackPressed() {
+		
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction ft = fm.beginTransaction();
+		
+		List<Fragment> fragments = fm.getFragments();
+		for (Fragment tmpFrag : fragments) {
+			if (tmpFrag instanceof CommentFragment) {
+				ft.remove(tmpFrag);
+				ft.commit();
+				
+				viewPager.setEnabled(true);
+				viewPager.setVisibility(ViewPager.VISIBLE);
+				final ActionBar actionBar = getActionBar();
+				actionBar.show();
+				return;
+			}
+		}
+		
+	//	super.onBackPressed();
 	}
 
 	@Override
 	public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
 		viewPager.setCurrentItem(tab.getPosition());
+		Log.e(TAG, "Tab Selected");
 	}
 
 	@Override

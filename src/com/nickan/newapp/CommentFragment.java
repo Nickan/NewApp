@@ -1,78 +1,100 @@
 package com.nickan.newapp;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.TableRow.LayoutParams;
 
 public class CommentFragment extends Fragment {
 	private static final String TAG = "CommentFragment";
+	private View view;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.comment, container, false);
+		view = inflater.inflate(R.layout.comment, container, false);
 		
 		showComment(view);
 		return view;
 	}
 	
-	private void showComment(View view) {
+	public void showComment(View view) {
 		Intent intent = getActivity().getIntent();
 		Bundle args = getArguments();
 		
-		if (args == null) {
-			Log.e(TAG, "Bundle is null");
-			return;
+		JSONArray comments = null;
+		try {
+			comments = new JSONArray(args.getString(FeedFragment.COMMENTS));
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		ArrayList<String> comments = args.getStringArrayList(FeedFragment.COMMENT);
 		
-		Resources r = getResources();
+		if (comments == null) return;
 		
-		int leftMarginDp = 25;
-		int leftMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, leftMarginDp, r.getDisplayMetrics());
-		
-		int topMarginDp = 25;
-		int topMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, topMarginDp, r.getDisplayMetrics());
-		
-		
-		LinearLayout layout = (LinearLayout) view.findViewById(R.id.comment_layout);
-		
-		if (comments == null) {
-			TextView newUserComment = new TextView(getActivity());
+		for (int index = 0; index < comments.length(); ++index) {
+			JSONObject tmpCom = JSONUtil.getJSONObject(comments, index, TAG);
 			
-			newUserComment.setText("No comments yet");
+			JSONObject from = JSONUtil.getJSONObject(tmpCom, "from", TAG);
 			
-			LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			lParams.leftMargin = leftMarginPx;
-			lParams.topMargin = topMarginPx;
+			String name = JSONUtil.getString(from, "name", TAG);
+			String msg = JSONUtil.getString(tmpCom, "message", TAG);
+			String createdTime = JSONUtil.getString(tmpCom, "created_time", TAG);
 			
-			newUserComment.setLayoutParams(lParams);
-			layout.addView(newUserComment);
-		} else {
-			for (String tmpStr : comments) {
-				TextView newUserComment = new TextView(getActivity());
-				newUserComment.setText(tmpStr);
-				
-				LayoutParams lParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-				lParams.leftMargin = leftMarginPx;
-				lParams.topMargin = topMarginPx;
-				
-				newUserComment.setLayoutParams(lParams);
-				
-				layout.addView(newUserComment);
-			}
+			int defaultPicIdRes = R.drawable.com_facebook_profile_picture_blank_portrait;
+			createUserPost(defaultPicIdRes, name, msg, createdTime, comments.length());
 		}
 		
 	}
+	
+
+	private void createUserPost(int resId, String name, String msg, String createdTime, int likeCount) {
+		Activity activity = getActivity();
+		RelativeLayout postLayout = new RelativeLayout(activity);
+		
+		ImageView userPic = ViewUtil.newImageView(IdCreator.getId(), 40, 40, resId, 
+				RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE, 10, 0, 10, 0);
+		
+		int textSize = 15;
+		TextView userName = ViewUtil.newTextView(IdCreator.getId(), textSize, RelativeLayout.RIGHT_OF, 
+				userPic.getId(), name, 5, 0, 10, 0);
+		TextView userMsg = ViewUtil.newTextView(IdCreator.getId(), textSize, 
+				Arrays.asList(new RuleAlignment(RelativeLayout.ALIGN_LEFT, userName.getId()),
+						new RuleAlignment(RelativeLayout.BELOW, userName.getId())), msg, 0, 0, 5, 0);
+		TextView msgCreatedTime = ViewUtil.newTextView(IdCreator.getId(), textSize,
+				Arrays.asList(new RuleAlignment(RelativeLayout.ALIGN_LEFT, userName.getId()), 
+						new RuleAlignment(RelativeLayout.BELOW, userMsg.getId())), createdTime, 0, 0, 5, 0);
+		
+		ImageView likeIcon = ViewUtil.newImageView(IdCreator.getId(), 10, 10, R.drawable.like_button, 
+				Arrays.asList(new RuleAlignment(RelativeLayout.RIGHT_OF, msgCreatedTime.getId()), 
+						new RuleAlignment(RelativeLayout.BELOW, userMsg.getId())), 10, 0, 10, 0);
+		
+		TextView msgLikeCount = ViewUtil.newTextView(IdCreator.getId(), textSize, 
+				Arrays.asList(new RuleAlignment(RelativeLayout.RIGHT_OF, likeIcon.getId()), 
+						new RuleAlignment(RelativeLayout.BELOW, userMsg.getId())), Integer.toString(likeCount), 5, 0, 5, 0);
+		
+		postLayout.addView(userPic);
+		postLayout.addView(userName);
+		postLayout.addView(userMsg);
+		postLayout.addView(msgCreatedTime);
+		postLayout.addView(likeIcon);
+		postLayout.addView(msgLikeCount);
+		
+		LinearLayout commentLayout = (LinearLayout) view.findViewById(R.id.comment_layout);
+		commentLayout.addView(postLayout);
+	}
+	
 	
 }

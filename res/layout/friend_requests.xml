@@ -1,0 +1,44 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollview_friend_request"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#00abff" >
+	
+    
+    <LinearLayout
+        android:id="@+id/friend_requests_layout"
+         android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        
+	    
+	    <RelativeLayout
+	        android:id="@+id/friend_request_part"
+	        android:background="#c9c9c9"
+			android:layout_width="fill_parent"
+			android:layout_height="20dp" />
+	    
+	    <TextView
+	            android:id="@+id/textView1"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_gravity="center_horizontal"
+	            android:text="People You May Know" />
+	    
+	    <RelativeLayout
+	        android:id="@+id/add_friend_request_part"
+	        android:background="#c9c9c9"
+			android:layout_width="fill_parent"
+			android:layout_height="20dp" >
+
+	        
+
+	    </RelativeLayout>
+
+
+    
+    </LinearLayout>
+
+</ScrollView>

@@ -24,6 +24,9 @@ public class SplashFragment extends ListFragment {
 	private OnSessionOpenStateListener onSessionOpenCallback;
 	// For communication with the Main Fragment
 	public interface OnSessionOpenStateListener {
+		/**
+		 * Will be called once the session is open
+		 */
 		public void onSessionOpen();
 	}
 	
