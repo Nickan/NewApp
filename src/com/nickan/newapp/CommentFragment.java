@@ -6,10 +6,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.nickan.newapp.util.IdCreator;
+import com.nickan.newapp.util.JSONUtil;
+import com.nickan.newapp.util.RuleAlignment;
+import com.nickan.newapp.util.ViewUtil;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,12 +37,23 @@ public class CommentFragment extends Fragment {
 	}
 	
 	public void showComment(View view) {
+		Log.e(TAG, "showComment()");
+		
 		Intent intent = getActivity().getIntent();
 		Bundle args = getArguments();
 		
+		String strComments = args.getString(FeedFragment.COMMENTS);
+		if (strComments == null) {
+			Log.e(TAG, "Comment is null");
+			return;
+		} else {
+			Log.e(TAG, "Comment: " + strComments);
+		}
+		
 		JSONArray comments = null;
+		
 		try {
-			comments = new JSONArray(args.getString(FeedFragment.COMMENTS));
+			comments = new JSONArray(strComments);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

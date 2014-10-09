@@ -6,7 +6,8 @@
           android:title="@string/action_search"
           android:showAsAction="ifRoom" />
 
-    <item android:id="@+id/action_settings"
+    <item android:id="@+id/action_messenger"
+          android:icon="@drawable/ic_action_messenger"
           android:title="@string/action_settings"
           android:showAsAction="always" />
 </menu>

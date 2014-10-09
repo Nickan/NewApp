@@ -4,8 +4,6 @@ package com.nickan.newapp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +13,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +29,10 @@ import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
+import com.nickan.newapp.util.IdCreator;
+import com.nickan.newapp.util.JSONUtil;
+import com.nickan.newapp.util.RuleAlignment;
+import com.nickan.newapp.util.ViewUtil;
 
 public class FeedFragment extends ListFragment {
 	// {{ Local variables
@@ -220,7 +221,11 @@ public class FeedFragment extends ListFragment {
 			@Override
 			public void onClick(View v) {
 				JSONArray comments = commentsMap.get(Integer.toString(v.getId()));
-				postSelectedCallback.onPostSelected(comments.toString());
+				if (comments != null) {
+					postSelectedCallback.onPostSelected(comments.toString());
+				} else {
+					postSelectedCallback.onPostSelected(null);
+				}
 			}
 		});
 		
@@ -312,47 +317,46 @@ public class FeedFragment extends ListFragment {
 				
 				JSONObject feedJObj = response.getGraphObject().getInnerJSONObject();
 				JSONArray dataArray = JSONUtil.getJSONArray(feedJObj, "data", TAG);
-				
-				View view = getView();
-
-				LinearLayout feedLayout = getBaseLayout(view);
-				LinearLayout.LayoutParams postLayoutParams = new LinearLayout.LayoutParams(
-								LinearLayout.LayoutParams.MATCH_PARENT,
-								LinearLayout.LayoutParams.MATCH_PARENT);
-				
-				// Loop through all the posts
-				for (int index = 0; index < dataArray.length(); ++index) {
-					JSONObject postJObj = null;
-					try {
-						postJObj = dataArray.getJSONObject(index);
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-					if (postJObj == null) {
-						Log.e(TAG, "postJObj is null");
-						return;
-					}
-					
-					JSONObject fromJObj = JSONUtil.getJSONObject(postJObj, "from", TAG);
-					String name = JSONUtil.getString(fromJObj, "name", TAG);
-					String comment = JSONUtil.getString(postJObj, "message", TAG);
-	
-					JSONArray commentsJArray = null;
-					JSONObject commentsJObj = JSONUtil.getJSONObject(postJObj, "comments", TAG);
-						if (commentsJObj != null) {
-							commentsJArray = JSONUtil.getJSONArray(commentsJObj, "data", TAG);
-					}
-					
-					int margin = ViewUtil.toPixelDimension(10);
-					postLayoutParams.setMargins(margin, margin, margin, 0);
-					feedLayout.addView(newPostLayout(R.drawable.com_facebook_profile_picture_blank_portrait,
-													name, "Yesterday at 11:00 AM", comment, commentsJArray),
-													postLayoutParams);
-				}
+				processuserJSONArray(dataArray);
 			}
 		}).executeAsync();
+		
+		
+	}
+	
+	private void processuserJSONArray(JSONArray dataArray) {
+		View view = getView();
+
+		LinearLayout feedLayout = getBaseLayout(view);
+		LinearLayout.LayoutParams postLayoutParams = new LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.MATCH_PARENT);
+		
+		// Loop through all the posts
+		for (int index = 0; index < dataArray.length(); ++index) {
+			JSONObject postJObj = JSONUtil.getJSONObject(dataArray, index, TAG);
+			
+			if (postJObj == null) {
+				Log.e(TAG, "postJObj is null");
+				return;
+			}
+			
+			JSONObject fromJObj = JSONUtil.getJSONObject(postJObj, "from", TAG);
+			String name = JSONUtil.getString(fromJObj, "name", TAG);
+			String comment = JSONUtil.getString(postJObj, "message", TAG);
+
+			JSONArray commentsJArray = null;
+			JSONObject commentsJObj = JSONUtil.getJSONObject(postJObj, "comments", TAG);
+				if (commentsJObj != null) {
+					commentsJArray = JSONUtil.getJSONArray(commentsJObj, "data", TAG);
+			}
+			
+			int margin = ViewUtil.toPixelDimension(10);
+			postLayoutParams.setMargins(margin, margin, margin, 0);
+			feedLayout.addView(newPostLayout(R.drawable.com_facebook_profile_picture_blank_portrait,
+											name, "Yesterday at 11:00 AM", comment, commentsJArray),
+											postLayoutParams);
+		}
 	}
 	
 	// }}

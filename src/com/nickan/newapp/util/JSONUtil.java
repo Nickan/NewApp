@@ -1,4 +1,4 @@
-package com.nickan.newapp;
+package com.nickan.newapp.util;
 
 import org.json.JSONArray;
 import org.json.JSONException;

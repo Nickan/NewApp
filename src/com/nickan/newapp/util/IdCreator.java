@@ -1,4 +1,4 @@
-package com.nickan.newapp;
+package com.nickan.newapp.util;
 
 public class IdCreator {
 	private static int id = 10000;
