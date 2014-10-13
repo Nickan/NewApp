@@ -34,7 +34,14 @@ public class FragPagerAdapter extends FragmentPagerAdapter {
 	
 	@Override
 	public CharSequence getPageTitle(int position) {
-		return "Fragment " + position;
+		switch (position) {
+		case 0:
+			return "Feed Layout";
+		case 1:
+			return "Friend Requests";
+		default:
+			return "Null";
+		}
 	}
 
 }

@@ -192,7 +192,7 @@ public class FeedFragment extends ListFragment {
 				R.drawable.share_button, RelativeLayout.CENTER_IN_PARENT,
 				RelativeLayout.TRUE, 0, 0, 0, 0);
 		TextView likeMsg = ViewUtil.newTextView(1012, buttonTextSize,
-				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Share",
+				RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE, "Like",
 				0, 0, 0, 0);
 		innerLayout.addView(likeImg);
 		innerLayout.addView(likeMsg);
