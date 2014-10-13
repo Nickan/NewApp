@@ -5,10 +5,18 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
     
+<!--     
  	<fragment android:name="com.nickan.newapp.MessengerFragment"
               android:id="@+id/messenger_fragment"
               android:layout_width="match_parent"
               android:layout_height="match_parent" />
+              
+    <fragment android:name="com.nickan.newapp.CommentFragment"
+    	android:id="@+id/comment_fragment"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent" />
+    	
+    	--> 
     
 </FrameLayout>
 

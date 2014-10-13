@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -91,7 +90,7 @@ public class FeedFragment extends ListFragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.user_feed, container, false);
+		View view = inflater.inflate(R.layout.feed_fragment, container, false);
 		uiHelper = new UiLifecycleHelper(getActivity(), callback);
 		uiHelper.onCreate(savedInstanceState);
 		
@@ -99,9 +98,7 @@ public class FeedFragment extends ListFragment {
 		
 		//...
 		Log.e(TAG, "onCreateView()");
-		
-		ViewUtil.activity = getActivity();
-		ViewUtil.dm = getResources().getDisplayMetrics();
+
 		return view;
 	}
 	

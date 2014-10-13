@@ -19,6 +19,7 @@ public class MainFragment extends Fragment implements ActionBar.TabListener {
 	private FragPagerAdapter fragPagerAdapter;
 	
 	private View view;
+	private ViewPager viewPager;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup root, Bundle savedInstanceState) {
@@ -26,7 +27,7 @@ public class MainFragment extends Fragment implements ActionBar.TabListener {
 		
 		fragPagerAdapter = new FragPagerAdapter(getActivity().getSupportFragmentManager());
 		
-		ViewPager viewPager = (ViewPager) view.findViewById(R.id.pager);
+		viewPager = (ViewPager) view.findViewById(R.id.pager);
 		viewPager.setId(IdCreator.getId());
 		viewPager.setAdapter(fragPagerAdapter);
 		
@@ -63,18 +64,15 @@ public class MainFragment extends Fragment implements ActionBar.TabListener {
 	}
 	
 	public void onPostSelected() {
-		ViewPager viewPager = (ViewPager) view.findViewById(R.id.pager);
-	//	viewPager.setEnabled(false);
-	//	viewPager.setVisibility(ViewPager.GONE);
-		
 		final ActionBar actionBar = getActivity().getActionBar();
 		actionBar.hide();
 	}
 
 	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
-		// TODO Auto-generated method stub
-		
+		if (viewPager != null) {
+			viewPager.setCurrentItem(tab.getPosition());
+		}
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import com.nickan.newapp.util.RuleAlignment;
 import com.nickan.newapp.util.ViewUtil;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -32,19 +31,29 @@ public class CommentFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		view = inflater.inflate(R.layout.comment, container, false);
 		
-		showComment(view);
 		return view;
 	}
 	
-	public void showComment(View view) {
+	private void clearComments() {
+		LinearLayout commentLayout = (LinearLayout) view.findViewById(R.id.comment_layout);
+		
+		commentLayout.removeAllViews();
+	}
+	
+	public void showComment(String strComments) {
+		clearComments();
+		
+		LinearLayout commentLayout = (LinearLayout) view.findViewById(R.id.comment_layout);
+		TextView staticCommentString = ViewUtil.newTextView(IdCreator.getId(), 20, 
+				RelativeLayout.ALIGN_LEFT, RelativeLayout.TRUE, "Comment: ", 0, 0, 0, 0);
+		commentLayout.addView(staticCommentString);
+		
 		Log.e(TAG, "showComment()");
-		
-		Intent intent = getActivity().getIntent();
-		Bundle args = getArguments();
-		
-		String strComments = args.getString(FeedFragment.COMMENTS);
 		if (strComments == null) {
 			Log.e(TAG, "Comment is null");
+			TextView noCommentsYet = ViewUtil.newTextView(IdCreator.getId(), 20, 
+					RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE, "No Comments Yet: ", 0, 0, 20, 0);
+			commentLayout.addView(noCommentsYet);
 			return;
 		} else {
 			Log.e(TAG, "Comment: " + strComments);

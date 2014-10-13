@@ -1,80 +1,116 @@
 package com.nickan.newapp;
 
-import java.util.List;
 
-import com.nickan.newapp.util.IdCreator;
+import com.facebook.Session;
 import com.nickan.newapp.util.ViewUtil;
 
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.animation.TranslateAnimation;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 public class MainActivity extends FragmentActivity implements FeedFragment.OnFeedFragmentListener, 
 		SplashFragment.OnSessionOpenStateListener {
 	private static final String TAG = "MainActivity";
-
-	// Swipe implementation
-	private FragPagerAdapter fragPagerAdapter = null;
 	
-	SplashFragment splashFragment;
-	private MainFragment mainFragment;
-	private MessengerFragment messengerFragment;
+	private Fragment splashFragment;
+	private Fragment mainFragment;
+	private Fragment messengerFragment;
+	private Fragment commentFragment;
 	private boolean messengerIsShown = false;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		ViewUtil.activity = this;
+		ViewUtil.dm = getResources().getDisplayMetrics();
+		
 		splashFragment = new SplashFragment();
 		
 		setContentView(R.layout.main_activity_layout);
 		
+		splashFragment = new SplashFragment();
+		mainFragment = new MainFragment();
+		messengerFragment = new MessengerFragment();
+		commentFragment = new CommentFragment();
+		
 		FragmentManager fm = getSupportFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
-		ft.add(R.id.main, new SplashFragment());
+		
+		ft.add(R.id.main, splashFragment);
+		ft.add(R.id.main, messengerFragment);
+		ft.add(R.id.main, mainFragment);
+		ft.add(R.id.main, commentFragment);
 		ft.commit();
+		
+		fm = getSupportFragmentManager();
+		ft = fm.beginTransaction();
+		ft.hide(splashFragment);
+		ft.hide(mainFragment);
+		ft.hide(messengerFragment);
+		ft.hide(commentFragment);
+		ft.commit();
+		
+		
+		fm = getSupportFragmentManager();
+		ft = fm.beginTransaction();
+		Session session = Session.getActiveSession();
+		if (session != null && session.isOpened()) {
+			ft.show(mainFragment);
+		} else {
+			ft.show(splashFragment);
+		}
+		ft.commit();
+		
 	}
 	
 	private void createViewPager() {
 		Log.e(TAG, "createViewPager()");
-		mainFragment = new MainFragment();
 		
 		FragmentManager fm = getSupportFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		
 		// Adding the messenger fragment;
-		messengerFragment = new MessengerFragment();
-		ft.add(R.id.main, messengerFragment);
+		ft.hide(splashFragment);
+		ft.hide(commentFragment);
 		ft.hide(messengerFragment);
-		
-		ft.replace(R.id.main, mainFragment);
+		ft.show(mainFragment);
+		ft.addToBackStack(null);
 		ft.commit();
 	}
 	
 	@Override
 	public void onBackPressed() {
+		((MainFragment) mainFragment).onBackPressed();
 	//	super.onBackPressed();
+		
 		FragmentManager fm = getSupportFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
+	//	fm.popBackStack();
+	//	ft.commit();
 		
-		ft.show(mainFragment);
-		ft.hide(commentFragment);
-		ft.commit();
-		mainFragment.onBackPressed();
+		if (!messengerIsShown) {
+			ft.hide(commentFragment);
+			ft.hide(messengerFragment);
+			ft.hide(splashFragment);
+			ft.show(mainFragment);
+			ft.commit();
+		}
+		
+		/*
+		if (mainFragment.isVisible()) {
+			Log.e(TAG, "Main Fragment is visible");
+		} else {
+			Log.e(TAG, "Main Fragment is not visible");
+		}
+		*/
 	}
 	
 	@Override
@@ -100,16 +136,29 @@ public class MainActivity extends FragmentActivity implements FeedFragment.OnFee
 	}
 	
 	private void showMessengerFragment() {
+		
+		if (!messengerFragment.isVisible()) {
+			FragmentManager fm = getSupportFragmentManager();
+			FragmentTransaction ft = fm.beginTransaction();
+			
+			ft.show(messengerFragment);
+			ft.show(mainFragment);
+			ft.commit();
+			Log.e(TAG, "Messenger show");
+		}
+		
+		
 		// {{ Fields for animating the Layout of the ViewPage scrolling left
 		LinearLayout viewPager = (LinearLayout) findViewById(R.id.view_pager_parent_layout);
 		
-		float moveX = -350;
+		float moveX = ViewUtil.toPixelDimension(-250);
 		if (messengerIsShown) {
 			TranslateAnimation animation = new TranslateAnimation(moveX, 0, 0, 0);
 			animation.setDuration(500);
 			animation.setFillAfter(true);
 			viewPager.startAnimation(animation);
 		} else {
+			
 			TranslateAnimation animation = new TranslateAnimation(0, moveX, 0, 0);
 			animation.setDuration(500);
 			animation.setFillAfter(true);
@@ -125,26 +174,24 @@ public class MainActivity extends FragmentActivity implements FeedFragment.OnFee
 		createViewPager();
 	}
 	
-	CommentFragment commentFragment;
 	@Override
 	public void onPostSelected(String comments) {
+		
 		Log.e(TAG, "Post Selected");
 		
 		FragmentManager fm = getSupportFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		
-		Bundle bundle = new Bundle();
-		bundle.putString(FeedFragment.COMMENTS, comments);
-		commentFragment = new CommentFragment();
-		commentFragment.setArguments(bundle);
-
-		ft.replace(R.id.main, commentFragment);
+		((CommentFragment) commentFragment).showComment(comments);
 		ft.hide(mainFragment);
-		ft.hide(messengerFragment);
-		ft.addToBackStack(null);
+		ft.show(messengerFragment);
+		ft.hide(splashFragment);
+		ft.show(commentFragment);
+	//	ft.addToBackStack("Test");
 		ft.commit();
 		
-		mainFragment.onPostSelected();
+		((MainFragment) mainFragment).onPostSelected();
+		
 	}
 	
 }
