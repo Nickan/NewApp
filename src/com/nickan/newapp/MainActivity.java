@@ -4,11 +4,13 @@ package com.nickan.newapp;
 import com.facebook.Session;
 import com.nickan.newapp.util.ViewUtil;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +27,10 @@ public class MainActivity extends FragmentActivity implements FeedFragment.OnFee
 	private Fragment messengerFragment;
 	private Fragment commentFragment;
 	private boolean messengerIsShown = false;
+	private LinearLayout viewPagerParentLayout;
+	
+	private boolean portraitMode = true;
+	float messengerSlideX;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +75,20 @@ public class MainActivity extends FragmentActivity implements FeedFragment.OnFee
 		}
 		ft.commit();
 		
+		DisplayMetrics dm = getResources().getDisplayMetrics();
+		int width = dm.widthPixels;
+		messengerSlideX = -width * 0.75f;
+	}
+
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		DisplayMetrics dm = getResources().getDisplayMetrics();
+		int width = dm.widthPixels;
+		Log.e(TAG, "Width: " + width);
+		
+		messengerSlideX = -width * 0.75f;
+		super.onConfigurationChanged(newConfig);
 	}
 	
 	private void createViewPager() {
@@ -136,6 +156,7 @@ public class MainActivity extends FragmentActivity implements FeedFragment.OnFee
 	}
 	
 	private void showMessengerFragment() {
+		Log.e(TAG, "Show messenger is clicked");
 		
 		if (!messengerFragment.isVisible()) {
 			FragmentManager fm = getSupportFragmentManager();
@@ -147,22 +168,22 @@ public class MainActivity extends FragmentActivity implements FeedFragment.OnFee
 			Log.e(TAG, "Messenger show");
 		}
 		
+		viewPagerParentLayout = (LinearLayout) mainFragment.getView().findViewById(R.id.view_pager_parent_layout);
+		
+		
 		
 		// {{ Fields for animating the Layout of the ViewPage scrolling left
-		LinearLayout viewPager = (LinearLayout) findViewById(R.id.view_pager_parent_layout);
-		
-		float moveX = ViewUtil.toPixelDimension(-250);
 		if (messengerIsShown) {
-			TranslateAnimation animation = new TranslateAnimation(moveX, 0, 0, 0);
+			TranslateAnimation animation = new TranslateAnimation(messengerSlideX, 0, 0, 0);
 			animation.setDuration(500);
 			animation.setFillAfter(true);
-			viewPager.startAnimation(animation);
+			viewPagerParentLayout.startAnimation(animation);
 		} else {
 			
-			TranslateAnimation animation = new TranslateAnimation(0, moveX, 0, 0);
+			TranslateAnimation animation = new TranslateAnimation(0, messengerSlideX, 0, 0);
 			animation.setDuration(500);
 			animation.setFillAfter(true);
-			viewPager.startAnimation(animation);
+			viewPagerParentLayout.startAnimation(animation);
 		}
 		
 		messengerIsShown = !messengerIsShown;

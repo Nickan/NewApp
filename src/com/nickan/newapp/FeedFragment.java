@@ -1,10 +1,22 @@
 package com.nickan.newapp;
 
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Scanner;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -298,39 +310,67 @@ public class FeedFragment extends ListFragment {
 	// {{ JSONObject and JSONArray information extraction
 	private void createFeed() {
 		// I need to extract name, date and time, user comment, comment count. Later photo
+	//	loadFromFacebook();
+		loadFromSavedFile();
+	}
+	
+	private void loadFromFacebook() {
 		Session session = Session.getActiveSession();
 		
-		new Request(session, "/me/feed", null, HttpMethod.GET, new Request.Callback() {
-			
-			@Override
-			public void onCompleted(Response response) {
-				Log.e(TAG, "onCompleted()");
-				
-				// If there is an error, stop executing the rest of the code
-				if (response.getError() != null) {
-					Log.e(TAG, response.getError().toString());
-					return;
-				}
-				
-				JSONObject feedJObj = response.getGraphObject().getInnerJSONObject();
-				JSONArray dataArray = JSONUtil.getJSONArray(feedJObj, "data", TAG);
-				processuserJSONArray(dataArray);
-			}
-		}).executeAsync();
-		
-		
+		new Request(session, "/me/feed", null, HttpMethod.GET,
+				new Request.Callback() {
+
+					@Override
+					public void onCompleted(Response response) {
+						Log.e(TAG, "onCompleted()");
+
+						// If there is an error, stop executing the rest of the
+						// code
+						if (response.getError() != null) {
+							Log.e(TAG, response.getError().toString());
+							return;
+						}
+
+						JSONObject feedJObj = response.getGraphObject()
+								.getInnerJSONObject();
+						JSONArray dataArray = JSONUtil.getJSONArray(feedJObj,
+								"data", TAG);
+						processuserJSONArray(dataArray);
+						
+						// Save the file for future use, as we are always having Internet connection issues
+						File file = new File(getActivity().getFilesDir(), "newFile.txt");
+						try {
+							FileWriter fw = new FileWriter(file);
+							fw.write(dataArray.toString());
+							fw.close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
+				}).executeAsync();
+	}
+	
+	private void loadFromSavedFile() {
+		JSONArray dataArray = JSONUtil.convertToJSONArray("newFile.txt", getActivity());
+		processuserJSONArray(dataArray);
 	}
 	
 	private void processuserJSONArray(JSONArray dataArray) {
 		View view = getView();
 
 		LinearLayout feedLayout = getBaseLayout(view);
+		// Clear the previous posts, if there is any.
+		feedLayout.removeAllViews();
+		
 		LinearLayout.LayoutParams postLayoutParams = new LinearLayout.LayoutParams(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.MATCH_PARENT);
 		
 		// Loop through all the posts
-		for (int index = 0; index < dataArray.length(); ++index) {
+		//.... Just process half of the total comments
+		for (int index = 0; index < 4; ++index) {
 			JSONObject postJObj = JSONUtil.getJSONObject(dataArray, index, TAG);
 			
 			if (postJObj == null) {
