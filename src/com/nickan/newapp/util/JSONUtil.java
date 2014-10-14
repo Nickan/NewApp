@@ -1,9 +1,16 @@
 package com.nickan.newapp.util;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.util.Log;
 
 public class JSONUtil {
@@ -65,4 +72,41 @@ public class JSONUtil {
 		}
 		return null;
 	}
+	
+	
+	public static JSONArray convertToJSONArray(String internalPath, Activity activity) {
+		FileInputStream fs;
+		StringBuilder sb = new StringBuilder();
+
+		try {
+			fs = activity.openFileInput(internalPath);
+			InputStreamReader ir = new InputStreamReader(fs);
+			BufferedReader br = new BufferedReader(ir);
+
+			String line;
+
+			try {
+				while ((line = br.readLine()) != null) {
+					sb.append(line);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		try {
+			return new JSONArray(sb.toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
 }
