@@ -12,6 +12,13 @@
     
     <string name="action_search">""Search"</string>
     <string name="action_settings">Settings</string>
+    <string-array name="drawer_titles">
+        <item >First Drawer Item</item>
+        <item >Second Drawer Item</item>
+        <item >Third Drawer Item</item>
+    </string-array>
+    <string name="drawer_open">Draw Open</string>
+    <string name="drawer_close">Drawer Close</string>
     
 
 </resources>

@@ -1,51 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
-    
-<!--     
- 	<fragment android:name="com.nickan.newapp.MessengerFragment"
-              android:id="@+id/messenger_fragment"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent" />
-              
-    <fragment android:name="com.nickan.newapp.CommentFragment"
-    	android:id="@+id/comment_fragment"
-    	android:layout_width="match_parent"
-    	android:layout_height="match_parent" />
-    	
-    	--> 
-    
-</FrameLayout>
 
-
-<!--
-<android.support.v4.view.ViewPager
-     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/pager"
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
-
-
-    <fragment android:name="com.nickan.newapp.SplashFragment"
-        android:id="@+id/splash_fragment"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"/>
-     
-    <fragment android:name="com.nickan.newapp.UserProfileFragment"
-        android:id="@+id/user_fragment"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"/>
+    android:layout_height="match_parent" >
     
-    <fragment android:name="com.nickan.newapp.CommentFragment"
-        android:id="@+id/comment_fragment"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
-    
-    <fragment android:name="com.facebook.widget.UserSettingsFragment"
-          android:id="@+id/userSettingsFragment"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent" />
--->
+    <!-- My main layout -->
+	<FrameLayout
+	    android:id="@+id/main"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:orientation="vertical" >
+	</FrameLayout>
+	
+	<!-- Implementation of navigation drawer. Yay! -->
+	<ListView android:id="@+id/list_drawer"
+	    android:layout_width="240dp"
+	    android:layout_height="match_parent"
+	    android:layout_gravity="start"
+	    android:choiceMode="singleChoice"
+	    android:divider="@android:color/transparent"
+	    android:dividerHeight="0dp"
+	    android:background="#111" />
+
+</android.support.v4.widget.DrawerLayout>
